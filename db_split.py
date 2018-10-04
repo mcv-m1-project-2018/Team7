@@ -1,6 +1,6 @@
 import os
 import random
-from db_analysis import read_gt, stats
+from db_analysis import read_gt, sign_counter
 from collections import defaultdict
 
 
@@ -26,7 +26,7 @@ def db_split(train_prop, db_file_path):
     :return: val: a list with the ids if the images in the validation set
     """
     gt = read_gt(db_file_path + "gt/")
-    sign_count, _, _, _ = stats(gt, db_file_path + "mask/")
+    sign_count = sign_counter(gt)
     sign_count.sort(key=lambda ls: ls[1])
 
     gt_files = os.listdir(db_file_path + "gt/")

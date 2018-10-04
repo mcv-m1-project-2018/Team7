@@ -105,6 +105,24 @@ def stats(gt, mask_file_path):
             sys.stdout.write("\n")
 """
 
+def sign_counter(gt):
+    """
+    Just a small function that counts the signs
+    :param gt: gt annotations
+    :return: signs count as a dict
+    """
+    signs = []
+
+    for ann in gt:
+        signs.append(ann[2])
+
+    sign_types = set(signs)
+    sign_count = []
+    for sign_type in sign_types:
+        sign_count.append([sign_type, signs.count(sign_type)])
+
+    return sign_count
+
 
 def main():
     gt_file_path = "./train/gt/"
