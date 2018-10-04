@@ -5,10 +5,6 @@ import matplotlib.patches as pat
 from collections import defaultdict
 #  import sys
 
-# TODO: color analysis:
-# we can analyze the colors inside the masked areas and make histograms with the values. This could help us
-# to segment the signals.
-
 
 def read_gt(gt_file_path):
     """
@@ -23,13 +19,13 @@ def read_gt(gt_file_path):
     gt = []
 
     for filename in files_gt:
-        file = open(gt_file_path + filename, "r")
         id_ = filename.replace("gt.", "").replace(".txt", "")
-        for line in file.readlines():
-            content = line.rstrip("\n").split(" ")
-            bbox = list(map(float, content[:4]))
-            aspect_ratio = (bbox[3] - bbox[1]) / (bbox[2] - bbox[0])  # aspect ratio of the bbox
-            gt.append([id_, bbox, content[4], aspect_ratio])
+        with open(gt_file_path + filename, "r") as file:
+            for line in file.readlines():
+                content = line.rstrip("\n").split(" ")
+                bbox = list(map(float, content[:4]))
+                aspect_ratio = (bbox[3] - bbox[1]) / (bbox[2] - bbox[0])  # aspect ratio of the bbox
+                gt.append([id_, bbox, content[4], aspect_ratio])
 
     return gt
 
