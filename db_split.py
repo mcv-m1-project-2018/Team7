@@ -1,7 +1,8 @@
 import os
 import random
-from db_analysis import read_gt, sign_counter
 from collections import defaultdict
+from db_analysis import read_gt, sign_counter
+import pickle
 
 
 def db_split(train_prop, db_file_path):
@@ -68,5 +69,10 @@ def db_split(train_prop, db_file_path):
 
 
 if __name__ == "__main__":
-    db_split(0.70, "./train/")
+    train, val = db_split(0.70, "./train/")
+
+    with open('./traffic_signs/train_split.pkl', 'wb') as f:
+        pickle.dump(train, f)
+    with open('./traffic_signs/val_split.pkl', 'wb') as f:
+        pickle.dump(val, f)
 

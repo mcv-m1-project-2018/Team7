@@ -5,7 +5,7 @@ Usage:
   traffic_sign_detection.py <dirName> <outPath> <pixelMethod> [--windowMethod=<wm>] 
   traffic_sign_detection.py -h | --help
 Options:
-  --windowMethod=<wm>        Window method       [default: 'None']
+  --windowMethod=<wm>        Window method       [default: None]
 """
 
 
@@ -97,22 +97,17 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
     return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy]
 
 
-
-
-
-                
 if __name__ == '__main__':
     # read arguments
     args = docopt(__doc__)
 
     images_dir = args['<dirName>']          # Directory with input images and annotations
-                                            # For instance, '../../DataSetDelivered/test'
     output_dir = args['<outPath>']          # Directory where to store output masks, etc. For instance '~/m1-results/week1/test'
+    pixel_method = args['<pixelMethod>']
+    window_method = args['--windowMethod']
 
-    pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy = traffic_sign_detection(images_dir, output_dir, 'normrgb', 'example1');
+    pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy = traffic_sign_detection(images_dir, output_dir, pixel_method, window_method);
 
-
-
-    print (pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy)
+    print(pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy)
 
     
