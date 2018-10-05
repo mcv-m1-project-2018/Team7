@@ -67,14 +67,14 @@ def blue_test(gt, mask_file_path, image_file_path):
         cv2.imshow("mask_blue", mask_hue_blue)
         cv2.waitKey(0)
 
-def color_segmentation_hsv(gt, mask_file_path, image_file_path):
+def color_segmentation_hsv(gt, mask_file_path, image_file_path, results_file_path):
     for ann in gt:
 
         image = cv2.imread(image_file_path + ann[0] + ".jpg")
         mask_im = cv2.imread(mask_file_path + "mask." + ann[0] + ".png", 0)
 
-        cv2.imshow('image', image)
-        cv2.imshow('mask annotated', mask_im * 255)
+        #cv2.imshow('image', image)
+        #cv2.imshow('mask annotated', mask_im * 255)
 
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
@@ -94,8 +94,11 @@ def color_segmentation_hsv(gt, mask_file_path, image_file_path):
 
         final_mask = cv2.bitwise_or(combined_red_mask, mask_hue_blue)
 
-        cv2.imshow("method mask", final_mask)
-        cv2.waitKey(0)
+        mask_name = results_file_path + "mask." + ann[0] + ".png"
+        cv2.imwrite(mask_name, final_mask)
+
+        #cv2.imshow("method mask", final_mask)
+        #cv2.waitKey(0)
 
 
 
@@ -161,11 +164,12 @@ def main():
     gt_file_path = "./train/gt/"
     image_file_path = "./train/"
     mask_file_path = "./train/mask/"
+    results_file_path = "./results/"
 
     gt = read_gt(gt_file_path)
     #color_analysis(gt, mask_file_path=mask_file_path, image_file_path=image_file_path)
     #red_test(gt, mask_file_path=mask_file_path, image_file_path=image_file_path)
-    color_segmentation_hsv(gt, mask_file_path=mask_file_path, image_file_path=image_file_path)
+    color_segmentation_hsv(gt, mask_file_path=mask_file_path, image_file_path=image_file_path, results_file_path=results_file_path)
 
 
 if __name__ == "__main__":
