@@ -67,7 +67,20 @@ def blue_test(gt, mask_file_path, image_file_path):
         cv2.imshow("mask_blue", mask_hue_blue)
         cv2.waitKey(0)
 
-def color_segmentation_hsv(gt, mask_file_path, image_file_path, results_file_path):
+def color_segmentation_hsv(gt,
+                           mask_file_path,
+                           image_file_path,
+                           results_file_path,
+                           red1_low,
+                           red1_high,
+                           red2_low,
+                           red2_high,
+                           blue_low,
+                           blue_high,
+                           sat_low,
+                           sat_high,
+                           value_low,
+                           value_high):
     for ann in gt:
 
         image = cv2.imread(image_file_path + ann[0] + ".jpg")
@@ -78,13 +91,13 @@ def color_segmentation_hsv(gt, mask_file_path, image_file_path, results_file_pat
 
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-        blue_low = np.array((105, 30, 30), dtype='uint8')
-        blue_high = np.array((135, 255, 255), dtype='uint8')
+        blue_low = np.array((blue_low, sat_low, value_low), dtype='uint8')
+        blue_high = np.array((blue_high, sat_high, value_high), dtype='uint8')
 
-        red_1_high = np.array((5, 255, 255), dtype='uint8')
-        red_1_low = np.array((0, 50, 50), dtype='uint8')
-        red_2_low = (175, 50, 50)
-        red_2_high = (180, 255, 255)
+        red_1_high = np.array((red1_high, sat_high, value_high), dtype='uint8')
+        red_1_low = np.array((red1_low, sat_low, value_low), dtype='uint8')
+        red_2_low = (red2_low, sat_low, value_low)
+        red_2_high = (red2_high, sat_high, value_high)
 
         mask_hue_red_1 = cv2.inRange(hsv_image, red_1_low, red_1_high)
         mask_hue_red_2 = cv2.inRange(hsv_image, red_2_low, red_2_high)
@@ -103,7 +116,9 @@ def color_segmentation_hsv(gt, mask_file_path, image_file_path, results_file_pat
 
 
 
-def color_analysis(gt, mask_file_path, image_file_path):
+def color_analysis(gt,
+                   mask_file_path,
+                   image_file_path):
     """
     This function extracts information about the color.
     :param gt: gt annotations: [image id, [tly, tlx, bry, brx], sign type, aspect ratio]
@@ -145,18 +160,45 @@ def color_analysis(gt, mask_file_path, image_file_path):
 
     colors = ('b', 'g', 'r', 'c', 'm', 'y', 'k')
     for sign_type in histograms_by_signal:
+        count = 0
         for i, hist in enumerate(histograms_by_signal[sign_type]):
-            plt.subplot(3, 1, 1)
-            plt.plot(hist[0], color=colors[i%len(colors)])
+            sum_hist = hist[0].sum()
+            plt.subplot(3, 2, 1)
+            plt.plot(hist[0] / sum_hist, color=colors[i%len(colors)])
             plt.title("Hue  "+sign_type + ": " + parse_sign_type(sign_type))
-            plt.subplot(3, 1, 2)
-            plt.plot(hist[1], color=colors[i % len(colors)])
+            plt.subplot(3, 2, 3)
+            plt.plot(hist[1] / sum_hist, color=colors[i % len(colors)])
             plt.title("Saturation  " + sign_type + ": " + parse_sign_type(sign_type))
-            plt.subplot(3, 1, 3)
-            plt.plot(hist[2], color=colors[i % len(colors)])
+            plt.subplot(3, 2, 5)
+            plt.plot(hist[2] / sum_hist, color=colors[i % len(colors)])
             plt.title("Value  " + sign_type + ": " + parse_sign_type(sign_type))
+            #print("...............")
+            #print((hist[0] / sum_hist).sum())
+            #print((hist[1] / sum_hist).sum())
+            #print((hist[2] / sum_hist).sum())
+            count+=1
+            if (i==0):
+                sumHist = [hist[0] / sum_hist, hist[1] / sum_hist, hist[2] / sum_hist]
+            else:
+                sumHist[0] += hist[0] / sum_hist
+                sumHist[1] += hist[1] / sum_hist
+                sumHist[2] += hist[2] / sum_hist
 
-        plt.title(sign_type+": "+parse_sign_type(sign_type))
+
+
+        plt.subplot(3, 2, 2)
+        plt.plot(sumHist[0] / count)
+        #print((sumHist[0] / count).sum())
+        plt.title("Hue Sum " + sign_type + ": " + parse_sign_type(sign_type))
+        plt.subplot(3, 2, 4)
+        plt.plot(sumHist[1] / count)
+        #print((sumHist[1] / count).sum())
+        plt.title("Saturation  " + sign_type + ": " + parse_sign_type(sign_type))
+        plt.subplot(3, 2, 6)
+        plt.plot(sumHist[2] / count)
+        #print((sumHist[2] / count).sum())
+        plt.title("Value  " + sign_type + ": " + parse_sign_type(sign_type))
+
         plt.show()
 
 
@@ -168,8 +210,8 @@ def main():
 
     gt = read_gt(gt_file_path)
     color_analysis(gt, mask_file_path=mask_file_path, image_file_path=image_file_path)
-    red_test(gt, mask_file_path=mask_file_path, image_file_path=image_file_path)
-    # color_segmentation_hsv(gt, mask_file_path=mask_file_path, image_file_path=image_file_path, results_file_path=results_file_path)
+    #red_test(gt, mask_file_path=mask_file_path, image_file_path=image_file_path)
+    #color_segmentation_hsv(gt, mask_file_path=mask_file_path, image_file_path=image_file_path, results_file_path=results_file_path)
 
 
 if __name__ == "__main__":
