@@ -28,7 +28,7 @@ class traffic_sign_model():
 def main():
     data_hdlr = data_handler(train_dir=args.images_dir)
 
-    sign_count, max_area, min_area, filling_ratios, max_aspect_ratio, min_aspect_ratio = data_analysis.shape_analysis \
+    sign_count, max_area, min_area, filling_ratios, max_aspect_ratio, min_aspect_ratio = data_analysis.shape_analysis\
         (data_hdlr.train_set)
 
     # data_analysis.color_analysis(data_hdlr.train_set) # works but returns nothing

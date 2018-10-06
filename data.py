@@ -47,8 +47,8 @@ class data_handler():
         for id_ in train_ids:
             filename = id_ + ".txt"
 
-            image = (train_dir + id_ + ".jpg")
-            mask = (train_dir + "mask/" + "mask." + id_ + ".png")
+            image = plt.imread(train_dir + id_ + ".jpg")
+            mask = plt.imread(train_dir + "mask/" + "mask." + id_ + ".png")
             ann = instance(image, mask, id_)
             with open(gt_file_path + "gt." + filename, "r") as file:
                 for line in file.readlines():
