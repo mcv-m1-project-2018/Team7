@@ -44,10 +44,10 @@ class data_analysis():
 
 class traffic_sign_model()
 	# hyperparameters
-	def pixel_method():
-		pass
-	def window_method():
-		pass
+	def pixel_method(im):
+		return pixel_candidates
+	def window_method(im, pixel_candidates):
+		return window_candidates
 	def tuning_f1():
 		pass
 
