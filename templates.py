@@ -1,7 +1,6 @@
 
 #================================================================================================
 # data.py
-
 class instance(img, msk, bboxes, sign_type, img_id):
 	img       = None       # numpy array  ==> rgb
 	msk       = None       # numpy array  ==> binary image 0 or 1
@@ -26,10 +25,7 @@ class data_handler():
 #================================================================================================
 # data_analysis.py
 
-
-
 class data_analysis():
-
 	def shape_analysis(train_set):
 		"""
 		sign_count, max_area, min_area, filling_ratios: all are dic and keys are data_handler.types		
@@ -43,23 +39,33 @@ class data_analysis():
 		pass
 
 
+#================================================================================================
+# traffic_sign_model.py
 
-class detector()
-	def 
+class traffic_sign_model()
+	# hyperparameters
+	def pixel_method():
+		pass
+	def window_method():
+		pass
+	def tuning_f1():
+		pass
 
-
-
-
-
+#================================================================================================
+"""
+ Then we will just add our developed methods with best set of hyperparameters insisde 
+ candidate_generation_pixel.py and candidate_generation_window.py
+ and then run the code below for returning final results
+"""
 
 
 """
 args = docopt(__doc__)
 
-images_dir = args['<dirName>']          # Directory with input images and annotations
-output_dir = args['<outPath>']          # Directory where to store output masks, etc. For instance '~/m1-results/week1/test'
-pixel_method = args['<pixelMethod>']
-window_method = args['--windowMethod']
+images_dir     = args['<dirName>']          # Directory with input images and annotations
+output_dir     = args['<outPath>']          # Directory where to store output masks, etc. For instance '~/m1-results/week1/test'
+pixel_method   = args['<pixelMethod>']
+window_method  = args['--windowMethod']
 
 pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy = 
 traffic_sign_detection(images_dir, output_dir, pixel_method, window_method);
