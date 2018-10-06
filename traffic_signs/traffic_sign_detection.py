@@ -20,19 +20,19 @@ import imageio
 from docopt import docopt
 import cv2
 
-from candidate_generation_pixel  import candidate_generation_pixel
-from candidate_generation_window import candidate_generation_window
-from evaluation.load_annotations import load_annotations
-from evaluation.evaluation_funcs import performance_accumulation_pixel, performance_accumulation_window
-from evaluation.evaluation_funcs import performance_evaluation_pixel, performance_evaluation_window
+from .candidate_generation_pixel  import candidate_generation_pixel
+from .candidate_generation_window import candidate_generation_window
+from .evaluation.load_annotations import load_annotations
+from .evaluation.evaluation_funcs import performance_accumulation_pixel, performance_accumulation_window
+from .evaluation.evaluation_funcs import performance_evaluation_pixel, performance_evaluation_window
 
 
 def traffic_sign_detection(split, directory, ids, output_dir, pixel_method, window_method, show_progress=False):
     # -1 just to avoid division by zero
-    pixelTP = -1
-    pixelFN = -1
-    pixelFP = -1
-    pixelTN = -1
+    pixelTP = 1
+    pixelFN = 1
+    pixelFP = 1
+    pixelTN = 1
 
     windowTP = 0
     windowFN = 0
