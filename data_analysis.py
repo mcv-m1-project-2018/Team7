@@ -21,7 +21,7 @@ class Data_analysis():
         filling_ratios = defaultdict(list)  # the key is the sign type and the value is a list with the filling ratios
 
         for image in train_split:
-            mask = image.msk
+            mask = plt.imread(image.msk)
             for ann in image.annotations:
                 bbox = ann[0]
 

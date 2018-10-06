@@ -4,6 +4,7 @@ import cv2
 
 from data import Data_handler
 from data_analysis import Data_analysis
+from traffic_signs import traffic_sign_detection as detection
 
 """
 This is the main file. I've created a "main" function where the data structures are initialized just as an
@@ -44,10 +45,14 @@ class Traffic_sign_model():
         pass
 
 
-def main():
-    data_hdlr = data_handler(train_dir=args.images_dir)
+def main(args):
 
-    sign_count, max_area, min_area, filling_ratios, max_aspect_ratio, min_aspect_ratio = data_analysis.shape_analysis\
+    print("reading the data...")
+    data_hdlr = Data_handler(train_dir=args.images_dir)
+    data_hdlr.read_all()
+
+    print("analyzing the test split...\n")
+    sign_count, max_area, min_area, filling_ratios, max_aspect_ratio, min_aspect_ratio = Data_analysis.shape_analysis\
         (data_hdlr.train_set)
 
     # data_analysis.color_analysis(data_hdlr.train_set) # works but returns nothing
@@ -57,6 +62,18 @@ def main():
 
     print("sign_count: ", sign_count, "\n", "max_area: ", max_area, "\n", "min_area: ", min_area,
           "\n", "max_aspect_ratio: ", max_aspect_ratio, "\n", "min_aspect_ratio: ", min_aspect_ratio)
+
+    print("\nprocessing the val split...\n")
+    pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy = \
+        detection.traffic_sign_detection("val", args.images_dir, data_hdlr.valid_set_ids, args.output_dir,
+                                         args.pixelMethod, args.windowMethod)
+
+    print(pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy)
+
+    print("\nprocessing the test split...")
+
+    detection.traffic_sign_detection("test", "./test/", data_hdlr.test_set_ids, args.output_dir,
+                                     args.pixelMethod, args.windowMethod)
 
 
 if __name__ == "__main__":
@@ -68,6 +85,6 @@ if __name__ == "__main__":
                                                                             '')
     parser.add_argument('-pixelMethod', type=str, default="hsv", help='Colour space used during the segmentation'
                                                                       '(either hsv or normrgb)')
-    parser.add_argument('-windowMethod', type=str, default="ok", help='this parameter is a mystery for us')
+    parser.add_argument('-windowMethod', type=str, default="None", help='this parameter is a mystery for us')
     args = parser.parse_args()
-    main()
+    main(args)

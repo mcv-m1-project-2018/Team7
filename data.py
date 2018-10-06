@@ -26,6 +26,9 @@ class Data_handler():
         self.train_set = []      # [Instance(), ...]
         self.valid_set = []      # [id, ...]
         self.test_set  = []      # [id, ...]
+        self.test_set_ids = []
+        self.valid_set_ids = []
+        self.train_set_ids = []
         self.types     = ['A','B','C','D','E','F'] 
         self.train_dir = train_dir
         self.test_dir  = test_dir
@@ -33,19 +36,22 @@ class Data_handler():
     def read_all(self):
         with open("./data/val_split.pkl", "rb") as f:
             valid_ids = pickle.load(f)
+            self.valid_set_ids = valid_ids
 
         with open("./data/train_split.pkl", "rb") as f:
             train_ids = pickle.load(f)
+            self.train_set_ids = train_ids
 
         with open("./data/test_split.pkl", "rb") as f:
             test_ids  = pickle.load(f)
+            self.test_set_ids = test_ids
 
         gt_file_path = self.train_dir + "gt/"
 
         for id_ in train_ids:
             filename = id_ + ".txt"
-            image = plt.imread(self.train_dir + id_ + ".jpg")
-            mask  = plt.imread(self.train_dir + "mask/" + "mask." + id_ + ".png")
+            image = (self.train_dir + id_ + ".jpg")
+            mask  = (self.train_dir + "mask/" + "mask." + id_ + ".png")
             ann   = Instance(image, mask, id_)
             with open(gt_file_path + "gt." + filename, "r") as file:
                 for line in file.readlines():
@@ -56,8 +62,8 @@ class Data_handler():
 
         for id_ in valid_ids:
             filename = id_ + ".txt"
-            image = plt.imread(self.train_dir + id_ + ".jpg")
-            mask  = plt.imread(self.train_dir + "mask/" + "mask." + id_ + ".png")
+            image = (self.train_dir + id_ + ".jpg")
+            mask  = (self.train_dir + "mask/" + "mask." + id_ + ".png")
             ann   = Instance(image, mask, id_)
 
             with open(gt_file_path + "gt." + filename, "r") as file:
@@ -69,7 +75,7 @@ class Data_handler():
 
         for id_ in test_ids:
             filename = id_ + ".txt"
-            image = plt.imread(self.test_dir + id_ + ".jpg")
+            image = (self.test_dir + id_ + ".jpg")
             mask  = None
             ann   = Instance(image, mask, id_)
 
