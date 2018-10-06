@@ -59,14 +59,14 @@ def main(args):
 
     print("\nprocessing the val split...\n")
     pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy = \
-        detection.traffic_sign_detection("val", args.images_dir, data_hdlr.valid_set_ids, args.output_dir,
+        detection.traffic_sign_detection("val", args.images_dir, data_hdlr.valid_set, args.output_dir,
                                          args.pixelMethod, args.windowMethod)
 
     print(pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy)
 
     print("\nprocessing the test split...")
 
-    detection.traffic_sign_detection("test", "./test/", data_hdlr.test_set_ids, args.output_dir,
+    detection.traffic_sign_detection("test", "./test/", data_hdlr.test_set, args.output_dir,
                                      args.pixelMethod, args.windowMethod)
 
 

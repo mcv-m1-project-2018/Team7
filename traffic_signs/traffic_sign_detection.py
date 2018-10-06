@@ -27,7 +27,7 @@ from .evaluation.evaluation_funcs import performance_accumulation_pixel, perform
 from .evaluation.evaluation_funcs import performance_evaluation_pixel, performance_evaluation_window
 
 
-def traffic_sign_detection(split, directory, ids, output_dir, pixel_method, window_method, show_progress=False):
+def traffic_sign_detection(split, directory, split_instances, output_dir, pixel_method, window_method, show_progress=False):
     # -1 just to avoid division by zero
     pixelTP = 1
     pixelFN = 1
@@ -42,10 +42,11 @@ def traffic_sign_detection(split, directory, ids, output_dir, pixel_method, wind
     window_accuracy  = 0
 
     # Load image names in the given directory
-    random.shuffle(ids)
+    random.shuffle(split_instances)
 
     if split == "val":
-        for id_ in ids:
+        for instance in split_instances:
+            id_ = instance.img_id
 
             # Read file
             image = cv2.imread('{}/{}'.format(directory, id_ + ".jpg"))
@@ -99,8 +100,10 @@ def traffic_sign_detection(split, directory, ids, output_dir, pixel_method, wind
                 [window_precision, window_sensitivity, window_accuracy] = performance_evaluation_window(windowTP, windowFN, windowFP)
     
         return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy]
+
     if split == "test":
-        for id_ in ids:
+        for instance in split_instances:
+            id_ = instance.img_id
 
             # Read file
             image = cv2.imread('{}/{}'.format(directory, id_ + ".jpg"))

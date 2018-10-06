@@ -26,25 +26,19 @@ class Data_handler():
         self.train_set = []      # [Instance(), ...]
         self.valid_set = []      # [id, ...]
         self.test_set  = []      # [id, ...]
-        self.test_set_ids = []
-        self.valid_set_ids = []
-        self.train_set_ids = []
-        self.types     = ['A','B','C','D','E','F'] 
+        self.types     = ['A','B','C','D','E','F']
         self.train_dir = train_dir
         self.test_dir  = test_dir
 
     def read_all(self):
         with open("./data/val_split.pkl", "rb") as f:
             valid_ids = pickle.load(f)
-            self.valid_set_ids = valid_ids
 
         with open("./data/train_split.pkl", "rb") as f:
             train_ids = pickle.load(f)
-            self.train_set_ids = train_ids
 
         with open("./data/test_split.pkl", "rb") as f:
             test_ids  = pickle.load(f)
-            self.test_set_ids = test_ids
 
         gt_file_path = self.train_dir + "gt/"
 
