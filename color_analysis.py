@@ -67,7 +67,20 @@ def blue_test(gt, mask_file_path, image_file_path):
         cv2.imshow("mask_blue", mask_hue_blue)
         cv2.waitKey(0)
 
-def color_segmentation_hsv(gt, mask_file_path, image_file_path, results_file_path):
+def color_segmentation_hsv(gt,
+                           mask_file_path,
+                           image_file_path,
+                           results_file_path,
+                           red1_low,
+                           red1_high,
+                           red2_low,
+                           red2_high,
+                           blue_low,
+                           blue_high,
+                           sat_low,
+                           sat_high,
+                           value_low,
+                           value_high):
     for ann in gt:
 
         image = cv2.imread(image_file_path + ann[0] + ".jpg")
@@ -78,13 +91,13 @@ def color_segmentation_hsv(gt, mask_file_path, image_file_path, results_file_pat
 
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-        blue_low = np.array((105, 30, 30), dtype='uint8')
-        blue_high = np.array((135, 255, 255), dtype='uint8')
+        blue_low = np.array((blue_low, sat_low, value_low), dtype='uint8')
+        blue_high = np.array((blue_high, sat_high, value_high), dtype='uint8')
 
-        red_1_high = np.array((5, 255, 255), dtype='uint8')
-        red_1_low = np.array((0, 50, 50), dtype='uint8')
-        red_2_low = (175, 50, 50)
-        red_2_high = (180, 255, 255)
+        red_1_high = np.array((red1_high, sat_high, value_high), dtype='uint8')
+        red_1_low = np.array((red1_low, sat_low, value_low), dtype='uint8')
+        red_2_low = (red2_low, sat_low, value_low)
+        red_2_high = (red2_high, sat_high, value_high)
 
         mask_hue_red_1 = cv2.inRange(hsv_image, red_1_low, red_1_high)
         mask_hue_red_2 = cv2.inRange(hsv_image, red_2_low, red_2_high)
@@ -103,7 +116,9 @@ def color_segmentation_hsv(gt, mask_file_path, image_file_path, results_file_pat
 
 
 
-def color_analysis(gt, mask_file_path, image_file_path):
+def color_analysis(gt,
+                   mask_file_path,
+                   image_file_path):
     """
     This function extracts information about the color.
     :param gt: gt annotations: [image id, [tly, tlx, bry, brx], sign type, aspect ratio]
