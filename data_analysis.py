@@ -71,8 +71,8 @@ class Data_analysis():
             histograms_by_signal = {}
             for image_instance in train_split:
                 for ann in image_instance.annotations:
-                    image   = image_instance.img
-                    mask_im = image_instance.msk
+                    image   = plt.imread(image_instance.img)
+                    mask_im = plt.imread(image_instance.msk)
 
                     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
