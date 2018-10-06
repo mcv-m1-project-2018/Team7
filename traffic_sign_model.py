@@ -9,12 +9,11 @@ This is the main file. I've created a "main" function where the data structures 
 example.   
 """
 
-
 class traffic_sign_model():
     # hyperparameters
     def pixel_method(im):
         pass
-        # return pixel_candidates
+        # return pixel_candidate
 
     def window_method(im, pixel_candidates):
         pass

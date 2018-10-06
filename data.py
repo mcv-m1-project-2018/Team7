@@ -7,49 +7,46 @@ import matplotlib.pyplot as plt
 # over the annotations easier
 # TODO: self.types should be initialized using some function in data_analysis
 
-class instance():
-    img         = None       # numpy array  ==> rgb
-    msk         = None       # numpy array  ==> binary image 0 or 1
-    annotations = None       # [ ([tly, tlx, bry, brx], sign_type), ... ]
-    img_id      = None       # srting
-
+class Instance():
     def __init__(self, img_, msk_, img_id_):
-        self.img = img_
-        self.msk = msk_
-        self.annotations = []
-        self.img_id = img_id_
+        self.img = img_            # numpy array  ==> rgb
+        self.msk = msk_            # numpy array  ==> binary image 0 or 1
+        self.annotations = []      # [ ([tly, tlx, bry, brx], sign_type), ... ]
+        self.img_id = img_id_      # srting
 
 
-class data_handler():
+class Data_handler():
     """
     Handles all the data related to the images and its annotations
     self.train_set contains a list with all the data of the images (image+mask+(bounding box, sign type)+image id)
     self.valid_set and self.test_set only are lists with the ids of the images in these splits as we don't need
     the annotations.
     """
-    def __init__(self, train_dir='./train/'):
-        self.train_set = []  # [instance(), ...]
-        self.valid_set = []  # [id, ...]
-        self.test_set = []  # [id, ...]
-        self.types = []  # ['A','B','C','D','E','F']
+    def __init__(self, train_dir='./train/', test_dir = './test/'):
+        self.train_set = []      # [Instance(), ...]
+        self.valid_set = []      # [id, ...]
+        self.test_set  = []      # [id, ...]
+        self.types     = ['A','B','C','D','E','F'] 
+        self.train_dir = train_dir
+        self.test_dir  = test_dir
 
+    def read_all(self):
         with open("./data/val_split.pkl", "rb") as f:
-            self.valid_set = pickle.load(f)
+            valid_ids = pickle.load(f)
 
         with open("./data/train_split.pkl", "rb") as f:
             train_ids = pickle.load(f)
 
         with open("./data/test_split.pkl", "rb") as f:
-            self.test_set = pickle.load(f)
+            test_ids  = pickle.load(f)
 
-        gt_file_path = train_dir + "gt/"
+        gt_file_path = self.train_dir + "gt/"
 
         for id_ in train_ids:
             filename = id_ + ".txt"
-
-            image = plt.imread(train_dir + id_ + ".jpg")
-            mask = plt.imread(train_dir + "mask/" + "mask." + id_ + ".png")
-            ann = instance(image, mask, id_)
+            image = plt.imread(self.train_dir + id_ + ".jpg")
+            mask  = plt.imread(self.train_dir + "mask/" + "mask." + id_ + ".png")
+            ann   = Instance(image, mask, id_)
             with open(gt_file_path + "gt." + filename, "r") as file:
                 for line in file.readlines():
                     content = line.rstrip("\n").split(" ")
@@ -57,7 +54,27 @@ class data_handler():
                     ann.annotations.append((bbox, content[4]))
             self.train_set.append(ann)
 
-    def read_all(self):
+        for id_ in valid_ids:
+            filename = id_ + ".txt"
+            image = plt.imread(self.train_dir + id_ + ".jpg")
+            mask  = plt.imread(self.train_dir + "mask/" + "mask." + id_ + ".png")
+            ann   = Instance(image, mask, id_)
+
+            with open(gt_file_path + "gt." + filename, "r") as file:
+                for line in file.readlines():
+                    content = line.rstrip("\n").split(" ")
+                    bbox = list(map(float, content[:4]))
+                    ann.annotations.append((bbox, content[4]))
+            self.valid_set.append(ann)
+
+        for id_ in test_ids:
+            filename = id_ + ".txt"
+            image = plt.imread(self.test_dir + id_ + ".jpg")
+            mask  = None
+            ann   = Instance(image, mask, id_)
+
+            self.test_set.append(ann)
+
         return self.train_set, self.valid_set, self.test_set
 
     @staticmethod

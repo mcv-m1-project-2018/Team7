@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import cv2
 
 
-class data_analysis():
+class Data_analysis():
     @staticmethod
     def shape_analysis(train_split):
         """
@@ -52,9 +52,9 @@ class data_analysis():
                     min_aspect_ratio = aspect_ratio
 
         sign_types = set(signs)
-        sign_count = []
+        sign_count = {}
         for sign_type in sign_types:
-            sign_count.append([sign_type, signs.count(sign_type)])
+            sign_count[sign_type] =  signs.count(sign_type)
 
         for key in filling_ratios.keys():
             filling_ratios[key] = [sum(filling_ratios[key]) / len(filling_ratios[key])]
@@ -71,8 +71,8 @@ class data_analysis():
             histograms_by_signal = {}
             for image_instance in train_split:
                 for ann in image_instance.annotations:
-                    image = cv2.imread(image_instance.img)
-                    mask_im = cv2.imread(image_instance.msk, 0)
+                    image   = image_instance.img
+                    mask_im = image_instance.msk
 
                     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
