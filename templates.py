@@ -1,6 +1,6 @@
 
-
-
+#================================================================================================
+# data.py
 
 class instance(img, msk, bboxes, sign_type, img_id):
 	img       = None       # numpy array  ==> rgb
@@ -23,7 +23,8 @@ class data_handler():
 	def parse_sign_type(sign_type):
 		#parse_sign_type(sign_type)   in db_analysis.py
 		return description
-
+#================================================================================================
+# data_analysis.py
 
 
 
@@ -52,7 +53,7 @@ class detector()
 
 
 
-
+"""
 args = docopt(__doc__)
 
 images_dir = args['<dirName>']          # Directory with input images and annotations
@@ -64,8 +65,4 @@ pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_pr
 traffic_sign_detection(images_dir, output_dir, pixel_method, window_method);
 
 print(pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy)
-
-
-
-
-
+"""
