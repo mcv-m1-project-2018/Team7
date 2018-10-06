@@ -142,6 +142,16 @@ def main():
     for key in filling_ratios.keys():
         print(key + ": " + str(sum(filling_ratios[key])/len(filling_ratios[key])))
 
+    min_aspect_ratio = float('inf')
+    max_aspect_ratio = 0.0
+    for ann in gt:
+        if ann[3] < min_aspect_ratio:
+            min_aspect_ratio = ann[3]
+        if ann[3] > max_aspect_ratio:
+            max_aspect_ratio = ann[3]
+    print("max aspect ratio: ", max_aspect_ratio)
+    print("min aspect ratio: ", min_aspect_ratio)
+
     #  exit(0)
 
 

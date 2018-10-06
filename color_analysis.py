@@ -167,9 +167,9 @@ def main():
     results_file_path = "./results/"
 
     gt = read_gt(gt_file_path)
-    #color_analysis(gt, mask_file_path=mask_file_path, image_file_path=image_file_path)
-    #red_test(gt, mask_file_path=mask_file_path, image_file_path=image_file_path)
-    color_segmentation_hsv(gt, mask_file_path=mask_file_path, image_file_path=image_file_path, results_file_path=results_file_path)
+    color_analysis(gt, mask_file_path=mask_file_path, image_file_path=image_file_path)
+    red_test(gt, mask_file_path=mask_file_path, image_file_path=image_file_path)
+    # color_segmentation_hsv(gt, mask_file_path=mask_file_path, image_file_path=image_file_path, results_file_path=results_file_path)
 
 
 if __name__ == "__main__":
