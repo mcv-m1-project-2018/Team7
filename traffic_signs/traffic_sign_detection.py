@@ -17,12 +17,13 @@ import pickle
 import numpy as np
 import imageio
 from docopt import docopt
+import cv2
 
-from .candidate_generation_pixel  import candidate_generation_pixel
-from .candidate_generation_window import candidate_generation_window
-from .evaluation.load_annotations import load_annotations
-from .evaluation.evaluation_funcs import performance_accumulation_pixel, performance_accumulation_window
-from .evaluation.evaluation_funcs import performance_evaluation_pixel, performance_evaluation_window
+from candidate_generation_pixel  import candidate_generation_pixel
+from candidate_generation_window import candidate_generation_window
+from evaluation.load_annotations import load_annotations
+from evaluation.evaluation_funcs import performance_accumulation_pixel, performance_accumulation_window
+from evaluation.evaluation_funcs import performance_evaluation_pixel, performance_evaluation_window
 
 def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
 
@@ -46,11 +47,12 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
         base, extension = os.path.splitext(name)
 
         # Read file
-        im = imageio.imread('{}/{}'.format(directory,name))
+        image = cv2.imread('{}/{}'.format(directory, name))
+
         print ('{}/{}'.format(directory,name))
 
         # Candidate Generation (pixel) ######################################
-        pixel_candidates = candidate_generation_pixel(im, pixel_method)
+        pixel_candidates = candidate_generation_pixel(image, pixel_method)
 
         
         fd = '{}/{}_{}'.format(output_dir, pixel_method, window_method)

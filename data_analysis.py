@@ -54,7 +54,7 @@ class Data_analysis():
         sign_types = set(signs)
         sign_count = {}
         for sign_type in sign_types:
-            sign_count[sign_type] =  signs.count(sign_type)
+            sign_count[sign_type] = signs.count(sign_type)
 
         for key in filling_ratios.keys():
             filling_ratios[key] = [sum(filling_ratios[key]) / len(filling_ratios[key])]
