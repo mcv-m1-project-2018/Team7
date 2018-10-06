@@ -3,7 +3,12 @@
 import numpy as np
 import cv2
 from skimage import color
+from traffic_sign_model import Traffic_sign_model
 
+traffic_sign_model = Traffic_sign_model()
+
+def candidate_generation_pixel_hsvclosing(image):
+    return traffic_sign_model.pixel_method(image)
 
 def candidate_generation_pixel_normrgb(im):
     # convert input image to the normRGB color space
@@ -118,6 +123,8 @@ def candidate_generation_pixel_hsv(image):
 
     return image  # change to pixel candidates
  
+
+
 # Create your own candidate_generation_pixel_xxx functions for other color spaces/methods
 # Add them to the switcher dictionary in the switch_color_space() function
 # These functions should take an image as input and output the pixel_candidates mask image
@@ -125,7 +132,8 @@ def candidate_generation_pixel_hsv(image):
 def switch_color_space(im, color_space):
     switcher = {
         'normrgb': candidate_generation_pixel_normrgb,
-        'hsv'    : candidate_generation_pixel_hsv
+        'hsv'    : candidate_generation_pixel_hsv,
+        'hsvclosing': candidate_generation_pixel_hsvclosing
         #'lab'    : candidate_generation_pixel_lab,
     }
     # Get the function from switcher dictionary

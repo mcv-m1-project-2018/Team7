@@ -13,17 +13,16 @@ import fnmatch
 import os
 import sys
 import pickle
-import random
 
 import numpy as np
 import imageio
 from docopt import docopt
-import cv2
 
-from candidate_generation_pixel import candidate_generation_pixel
-from candidate_generation_window import candidate_generation_window
-from evaluation.load_annotations import load_annotations
-import evaluation.evaluation_funcs as evalf
+from .candidate_generation_pixel  import candidate_generation_pixel
+from .candidate_generation_window import candidate_generation_window
+from .evaluation.load_annotations import load_annotations
+from .evaluation.evaluation_funcs import performance_accumulation_pixel, performance_accumulation_window
+from .evaluation.evaluation_funcs import performance_evaluation_pixel, performance_evaluation_window
 
 def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
 
@@ -42,17 +41,16 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
     # Load image names in the given directory
     file_names = sorted(fnmatch.filter(os.listdir(directory), '*.jpg'))
 
-    # random.shuffle(file_names)
+    
     for name in file_names:
         base, extension = os.path.splitext(name)
 
         # Read file
-        image = cv2.imread('{}/{}'.format(directory, name))
-        # im = imageio.imread('{}/{}'.format(directory,name))
-        print ('{}/{}'.format(directory, name))
+        im = imageio.imread('{}/{}'.format(directory,name))
+        print ('{}/{}'.format(directory,name))
 
         # Candidate Generation (pixel) ######################################
-        pixel_candidates = candidate_generation_pixel(image, pixel_method)
+        pixel_candidates = candidate_generation_pixel(im, pixel_method)
 
         
         fd = '{}/{}_{}'.format(output_dir, pixel_method, window_method)
@@ -76,18 +74,18 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
         # Accumulate pixel performance of the current image #################
         pixel_annotation = imageio.imread('{}/mask/mask.{}.png'.format(directory,base)) > 0
 
-        [localPixelTP, localPixelFP, localPixelFN, localPixelTN] = evalf.performance_accumulation_pixel(pixel_candidates, pixel_annotation)
+        [localPixelTP, localPixelFP, localPixelFN, localPixelTN] = performance_accumulation_pixel(pixel_candidates, pixel_annotation)
         pixelTP = pixelTP + localPixelTP
         pixelFP = pixelFP + localPixelFP
         pixelFN = pixelFN + localPixelFN
         pixelTN = pixelTN + localPixelTN
         
-        [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity] = evalf.performance_evaluation_pixel(pixelTP, pixelFP, pixelFN, pixelTN)
+        [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity] = performance_evaluation_pixel(pixelTP, pixelFP, pixelFN, pixelTN)
 
         if window_method != 'None':
             # Accumulate object performance of the current image ################
             window_annotationss = load_annotations('{}/gt/gt.{}.txt'.format(directory, base))
-            [localWindowTP, localWindowFN, localWindowFP] = evalf.performance_accumulation_window(window_candidates, window_annotationss)
+            [localWindowTP, localWindowFN, localWindowFP] = performance_accumulation_window(window_candidates, window_annotationss)
 
             windowTP = windowTP + localWindowTP
             windowFN = windowFN + localWindowFN
@@ -95,7 +93,7 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
 
 
             # Plot performance evaluation
-            [window_precision, window_sensitivity, window_accuracy] = evalf.performance_evaluation_window(windowTP, windowFN, windowFP)
+            [window_precision, window_sensitivity, window_accuracy] = performance_evaluation_window(windowTP, windowFN, windowFP)
     
     return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy]
 
