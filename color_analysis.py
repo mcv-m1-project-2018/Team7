@@ -145,18 +145,45 @@ def color_analysis(gt, mask_file_path, image_file_path):
 
     colors = ('b', 'g', 'r', 'c', 'm', 'y', 'k')
     for sign_type in histograms_by_signal:
+        count = 0
         for i, hist in enumerate(histograms_by_signal[sign_type]):
-            plt.subplot(3, 1, 1)
-            plt.plot(hist[0], color=colors[i%len(colors)])
+            sum_hist = hist[0].sum()
+            plt.subplot(3, 2, 1)
+            plt.plot(hist[0] / sum_hist, color=colors[i%len(colors)])
             plt.title("Hue  "+sign_type + ": " + parse_sign_type(sign_type))
-            plt.subplot(3, 1, 2)
-            plt.plot(hist[1], color=colors[i % len(colors)])
+            plt.subplot(3, 2, 3)
+            plt.plot(hist[1] / sum_hist, color=colors[i % len(colors)])
             plt.title("Saturation  " + sign_type + ": " + parse_sign_type(sign_type))
-            plt.subplot(3, 1, 3)
-            plt.plot(hist[2], color=colors[i % len(colors)])
+            plt.subplot(3, 2, 5)
+            plt.plot(hist[2] / sum_hist, color=colors[i % len(colors)])
             plt.title("Value  " + sign_type + ": " + parse_sign_type(sign_type))
+            #print("...............")
+            #print((hist[0] / sum_hist).sum())
+            #print((hist[1] / sum_hist).sum())
+            #print((hist[2] / sum_hist).sum())
+            count+=1
+            if (i==0):
+                sumHist = [hist[0] / sum_hist, hist[1] / sum_hist, hist[2] / sum_hist]
+            else:
+                sumHist[0] += hist[0] / sum_hist
+                sumHist[1] += hist[1] / sum_hist
+                sumHist[2] += hist[2] / sum_hist
 
-        plt.title(sign_type+": "+parse_sign_type(sign_type))
+
+
+        plt.subplot(3, 2, 2)
+        plt.plot(sumHist[0] / count)
+        #print((sumHist[0] / count).sum())
+        plt.title("Hue Sum " + sign_type + ": " + parse_sign_type(sign_type))
+        plt.subplot(3, 2, 4)
+        plt.plot(sumHist[1] / count)
+        #print((sumHist[1] / count).sum())
+        plt.title("Saturation  " + sign_type + ": " + parse_sign_type(sign_type))
+        plt.subplot(3, 2, 6)
+        plt.plot(sumHist[2] / count)
+        #print((sumHist[2] / count).sum())
+        plt.title("Value  " + sign_type + ": " + parse_sign_type(sign_type))
+
         plt.show()
 
 
@@ -168,8 +195,8 @@ def main():
 
     gt = read_gt(gt_file_path)
     color_analysis(gt, mask_file_path=mask_file_path, image_file_path=image_file_path)
-    red_test(gt, mask_file_path=mask_file_path, image_file_path=image_file_path)
-    # color_segmentation_hsv(gt, mask_file_path=mask_file_path, image_file_path=image_file_path, results_file_path=results_file_path)
+    #red_test(gt, mask_file_path=mask_file_path, image_file_path=image_file_path)
+    #color_segmentation_hsv(gt, mask_file_path=mask_file_path, image_file_path=image_file_path, results_file_path=results_file_path)
 
 
 if __name__ == "__main__":
