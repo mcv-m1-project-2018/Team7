@@ -6,10 +6,6 @@ from data import Data_handler
 from data_analysis import Data_analysis
 from traffic_signs import traffic_sign_detection as detection
 
-"""
-This is the main file. I've created a "main" function where the data structures are initialized just as an
-example.   
-"""
 
 class Traffic_sign_model():
     # hyperparameters
@@ -54,8 +50,6 @@ def main(args):
     print("analyzing the test split...\n")
     sign_count, max_area, min_area, filling_ratios, max_aspect_ratio, min_aspect_ratio = Data_analysis.shape_analysis\
         (data_hdlr.train_set)
-
-    # data_analysis.color_analysis(data_hdlr.train_set) # works but returns nothing
 
     for key in filling_ratios.keys():
         print(key + ": " + str(filling_ratios[key]))

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 # note that now the bbox and the sign type are stored as a tuple in a list called annotations. This makes iterating
 # over the annotations easier
-# TODO: self.types should be initialized using some function in data_analysis
+
 
 class Instance():
     def __init__(self, img_, msk_, img_id_):

@@ -26,12 +26,13 @@ from evaluation.load_annotations import load_annotations
 from evaluation.evaluation_funcs import performance_accumulation_pixel, performance_accumulation_window
 from evaluation.evaluation_funcs import performance_evaluation_pixel, performance_evaluation_window
 
+
 def traffic_sign_detection(split, directory, ids, output_dir, pixel_method, window_method, show_progress=False):
     # -1 just to avoid division by zero
-    pixelTP  = -1
-    pixelFN  = -1
-    pixelFP  = -1
-    pixelTN  = -1
+    pixelTP = -1
+    pixelFN = -1
+    pixelFP = -1
+    pixelTN = -1
 
     windowTP = 0
     windowFN = 0
@@ -41,7 +42,6 @@ def traffic_sign_detection(split, directory, ids, output_dir, pixel_method, wind
     window_accuracy  = 0
 
     # Load image names in the given directory
-    # file_names = sorted(fnmatch.filter(os.listdir(directory), '*.jpg'))
     random.shuffle(ids)
 
     if split == "val":
@@ -51,7 +51,7 @@ def traffic_sign_detection(split, directory, ids, output_dir, pixel_method, wind
             image = cv2.imread('{}/{}'.format(directory, id_ + ".jpg"))
 
             if show_progress:
-                print ('{}/{}'.format(directory,id_+".jpg"))
+                print('{}/{}'.format(directory,id_+".jpg"))
 
             # Candidate Generation (pixel) ######################################
             pixel_candidates = candidate_generation_pixel(image, pixel_method)
