@@ -20,7 +20,7 @@ import imageio
 from docopt import docopt
 import cv2
 
-from .candidate_generation_pixel  import candidate_generation_pixel
+from .candidate_generation_pixel  import candidate_generation_pixel, morph_transformation
 from .candidate_generation_window import candidate_generation_window
 from .evaluation.load_annotations import load_annotations
 from .evaluation.evaluation_funcs import performance_accumulation_pixel, performance_accumulation_window
@@ -56,6 +56,7 @@ def traffic_sign_detection(split, directory, split_instances, output_dir, pixel_
 
             # Candidate Generation (pixel) ######################################
             pixel_candidates = candidate_generation_pixel(image, pixel_method)
+            pixel_candidates = morph_transformation(pixel_candidates)
 
             fd = '{}/{}_{}_{}'.format(output_dir, pixel_method, window_method, split)
             if not os.path.exists(fd):
