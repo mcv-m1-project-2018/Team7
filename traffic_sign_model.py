@@ -116,7 +116,7 @@ def main(args):
     data_hdlr = Data_handler(train_dir=args.images_dir)
     data_hdlr.read_all()
 
-    print("analyzing the test split...\n")
+    print("analyzing the train split...\n")
     sign_count, max_area, min_area, filling_ratios, max_aspect_ratio, min_aspect_ratio = Data_analysis.shape_analysis\
         (data_hdlr.train_set)
 
