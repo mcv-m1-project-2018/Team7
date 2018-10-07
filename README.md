@@ -2,12 +2,12 @@
 
 This is our code for the first project. 
 
-##Requirements
-
+## Requirements
+ 
 The file ```requirements.txt``` contains all the required packages to run our code. This project has been developed in Python
 3.7.
 
-##Running the code
+## Running the code
 
 To run our code simply run the ``` traffic_sign_model.py ``` script. These are the optional arguments:
 
@@ -21,7 +21,7 @@ To run our code simply run the ``` traffic_sign_model.py ``` script. These are t
 If you want to use the default arguments just put the ```train``` and the ```test``` directories in the root directory
 of this project and run the script.
 
-##Results
+## Results
 
 
 
