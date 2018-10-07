@@ -43,12 +43,12 @@ def morph_transformation(pixel_candidates):
         width = y_max - y_min
         height = x_max - x_min
 
-        # check if the aspect ration and area are bigger or smaller than the ground truth. If it is consistent with
+        # check if the aspect ratio and area are bigger or smaller than the ground truth. If it is consistent with
         # the ground truth, we try to fill it (some signs are not fully segmented because they contain white or other
         # colors) with cv2.fillPoly.
         if max_aspect_ratio > height/width > min_aspect_ratio and max_area > width*height > min_area:
             cv2.fillPoly(pixel_candidates, pts=[contour], color=255)
-        # If the are is too big/small/wide/tall it gets erased from the mask.
+        # If the area is too big/small/wide/tall it gets erased from the mask.
         else:
             for x in range(y_min-1, y_max+1):
                 for y in range(x_min-1, x_max+1):
