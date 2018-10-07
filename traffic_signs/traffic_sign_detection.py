@@ -129,6 +129,8 @@ def traffic_sign_detection(split, directory, split_instances, output_dir, pixel_
 
             # Candidate Generation (pixel) ######################################
             pixel_candidates = candidate_generation_pixel(image, pixel_method)
+            # Morphological operations
+            pixel_candidates = morph_transformation(pixel_candidates)
 
             fd = '{}/{}_{}_{}'.format(output_dir, pixel_method, window_method, split)
             if not os.path.exists(fd):
