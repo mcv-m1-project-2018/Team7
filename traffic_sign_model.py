@@ -66,7 +66,7 @@ def main(args):
 
     print("\nprocessing the test split...")
 
-    detection.traffic_sign_detection("test", "./test/", data_hdlr.test_set, args.output_dir,
+    detection.traffic_sign_detection("test", args.test_dir, data_hdlr.test_set, args.output_dir,
                                      args.pixelMethod, args.windowMethod)
 
 
@@ -77,6 +77,7 @@ if __name__ == "__main__":
     parser.add_argument('-output_dir', type=str, default="./results/", help='Directory where to store output masks, '
                                                                             'etc.  For instance ~/m1-results/week1/test'
                                                                             '')
+    parser.add_argument('-test_dir', type=str, default="./test/", help='Directory with the test split images')
     parser.add_argument('-pixelMethod', type=str, default="hsv", help='Colour space used during the segmentation'
                                                                       '(either hsv or normrgb)')
     parser.add_argument('-windowMethod', type=str, default="None", help='this parameter is a mystery for us')
