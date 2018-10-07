@@ -2,7 +2,7 @@ from collections import defaultdict
 
 import matplotlib.pyplot as plt
 import cv2
-
+from data import Data_handler
 
 class Data_analysis():
     @staticmethod
@@ -71,8 +71,10 @@ class Data_analysis():
             histograms_by_signal = {}
             for image_instance in train_split:
                 for ann in image_instance.annotations:
-                    image   = plt.imread(image_instance.img)
-                    mask_im = plt.imread(image_instance.msk)
+                    image   = cv2.imread(image_instance.img)
+                    #cv2.imshow('image', image)
+                    #cv2.waitKey(0)
+                    mask_im = cv2.imread(image_instance.msk, 0)
 
                     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
@@ -84,4 +86,43 @@ class Data_analysis():
                         histograms_by_signal[sign_type].append((histH, histS, histV))
                     else:
                         histograms_by_signal[sign_type] = [(histH, histS, histV)]
+                    #print(sign_type)
+                    #plt.plot(histH)
+                    #plt.show()
+
+            colors = ('b', 'g', 'r', 'c', 'm', 'y', 'k')
+            for sign_type in histograms_by_signal:
+                count = 0
+                for i, hist in enumerate(histograms_by_signal[sign_type]):
+                    sum_hist = hist[0].sum()
+                    plt.subplot(3, 2, 1)
+                    plt.plot(hist[0] / sum_hist, color=colors[i % len(colors)])
+                    plt.title("Hue  " + sign_type + ": " + Data_handler.parse_sign_type(sign_type))
+                    plt.subplot(3, 2, 3)
+                    plt.plot(hist[1] / sum_hist, color=colors[i % len(colors)])
+                    plt.title("Saturation  " + sign_type + ": " + Data_handler.parse_sign_type(sign_type))
+                    plt.subplot(3, 2, 5)
+                    plt.plot(hist[2] / sum_hist, color=colors[i % len(colors)])
+                    plt.title("Value  " + sign_type + ": " + Data_handler.parse_sign_type(sign_type))
+                    count += 1
+                    if (i == 0):
+                        sumHist = [hist[0] / sum_hist, hist[1] / sum_hist, hist[2] / sum_hist]
+                    else:
+                        sumHist[0] += hist[0] / sum_hist
+                        sumHist[1] += hist[1] / sum_hist
+                        sumHist[2] += hist[2] / sum_hist
+
+                plt.subplot(3, 2, 2)
+                plt.plot(sumHist[0] / count)
+                plt.title("Hue Sum " + sign_type + ": " + Data_handler.parse_sign_type(sign_type))
+                plt.subplot(3, 2, 4)
+                plt.plot(sumHist[1] / count)
+                plt.title("Saturation  " + sign_type + ": " + Data_handler.parse_sign_type(sign_type))
+                plt.subplot(3, 2, 6)
+                plt.plot(sumHist[2] / count)
+                plt.title("Value  " + sign_type + ": " + Data_handler.parse_sign_type(sign_type))
+
+                plt.show()
+            return histograms_by_signal
+
 

@@ -28,7 +28,7 @@ def red_test(gt, mask_file_path, image_file_path):
         cv2.imshow('mask', mask_im * 255)
         cv2.waitKey(0)
 
-        hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        hsv_image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
 
         red_1_high = np.array((5, 255, 255), dtype = 'uint8')
         red_1_low = np.array((0, 50, 50), dtype = 'uint8')
