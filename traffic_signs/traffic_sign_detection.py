@@ -28,6 +28,21 @@ from .evaluation.evaluation_funcs import performance_evaluation_pixel, performan
 
 
 def traffic_sign_detection(split, directory, split_instances, output_dir, pixel_method, window_method, show_progress=False):
+    """
+    We have modified this code so it either segments the images in the validation split (and returns the metrics) or
+    segments the images in the test set (without returning metrics).
+    From this function the function "candidate_generation_pixel" is called and the images are segmented. Then we call
+    the function "morph_transformation", which performs morphological operations over the mask.
+
+    :param split: the split, either "val" or "test"
+    :param directory: train root directory eg ./train/
+    :param split_instances: list with the split instances.
+    :param output_dir: output directory
+    :param pixel_method: colorspace segmentation method. Either hsv or normrgb.
+    :param window_method: None because none
+    :param show_progress: If true shows the progress.
+    :return:
+    """
     # -1 just to avoid division by zero
     pixelTP = 1
     pixelFN = 1
@@ -41,7 +56,6 @@ def traffic_sign_detection(split, directory, split_instances, output_dir, pixel_
     window_precision = 0
     window_accuracy  = 0
 
-    # Load image names in the given directory
     random.shuffle(split_instances)
 
     if split == "val":
@@ -56,6 +70,7 @@ def traffic_sign_detection(split, directory, split_instances, output_dir, pixel_
 
             # Candidate Generation (pixel) ######################################
             pixel_candidates = candidate_generation_pixel(image, pixel_method)
+            # Morphological operations
             pixel_candidates = morph_transformation(pixel_candidates)
 
             fd = '{}/{}_{}_{}'.format(output_dir, pixel_method, window_method, split)

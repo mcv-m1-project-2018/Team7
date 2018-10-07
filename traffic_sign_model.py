@@ -42,6 +42,18 @@ class Traffic_sign_model():
 
 
 def main(args):
+    """
+    The main function initializes the database with all the annotation from the ground truth. The database is contained
+    in the "data_hdlr" object (data.py). This object contains the val, train and test splits.
+    To analyze the shape and other attributes of the annotations from the train split, we call the "shape_analysis"
+    method from the "Data_analysis" class in the "data_analysis.py" file. The results of this analysis are printed
+    in the terminal.
+    Finally, we perform the segmentation over the validation split and we the metrics are also displayed through the
+    terminal. The results are saved in ./results/segmentation-method_window-method_split. For the test split we only
+    store the generated masks.
+    :param args: arguments
+    :return:
+    """
 
     print("reading the data...")
     data_hdlr = Data_handler(train_dir=args.images_dir)
