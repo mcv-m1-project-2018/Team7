@@ -129,14 +129,8 @@ def traffic_sign_detection(split, directory, split_instances, output_dir, pixel_
                 print ('{}/{}'.format(directory,id_+".jpg"))
 
             # Candidate Generation (pixel) ######################################
-<<<<<<< HEAD
             #pixel_candidates = candidate_generation_pixel(image, pixel_method)
             pixel_candidates = pixel_method(image)
-=======
-            pixel_candidates = candidate_generation_pixel(image, pixel_method)
-            # Morphological operations
-            pixel_candidates = morph_transformation(pixel_candidates)
->>>>>>> 076abc37e9b293f396a6a2acb0b1cc20c697bc27
 
             fd = '{}/{}_{}_{}'.format(output_dir, pixel_method_name, window_method, split)
             if not os.path.exists(fd):
