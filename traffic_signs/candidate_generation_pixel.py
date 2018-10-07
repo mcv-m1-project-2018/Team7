@@ -8,55 +8,6 @@ from traffic_sign_model import Traffic_sign_model
 traffic_sign_model = Traffic_sign_model()
 
 
-def morph_transformation(pixel_candidates):
-    """
-    Performs morphological operations over the masks.
-
-    :param pixel_candidates: the pixeeels of the image
-    :return: more pixels
-    """
-
-    # opening + closing to remove artifacts and holes.
-    kernel = np.ones((5, 5), np.uint8)
-    pixel_candidates = cv2.morphologyEx(pixel_candidates, cv2.MORPH_OPEN, kernel)
-
-    kernel = np.ones((10, 10), np.uint8)
-    pixel_candidates = cv2.morphologyEx(pixel_candidates, cv2.MORPH_CLOSE, kernel)
-
-    # find all contours (segmented areas) of the mask to delete those that are not consistent with the train split
-    # analysis
-    image, contours, hierarchy = cv2.findContours(pixel_candidates, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-
-    max_aspect_ratio = 1.419828704905269 * 1.15
-    min_aspect_ratio = 0.5513618362563639 * 0.85
-    max_area = 55919.045 * 1.10
-    min_area = 909.7550000000047 * 0.75
-
-    for contour in contours:
-        # max and min coordinates of the segmented area
-        xcnts = np.vstack(contour.reshape(-1, 2))
-        x_min = min(xcnts[:, 0])
-        x_max = max(xcnts[:, 0])
-        y_min = min(xcnts[:, 1])
-        y_max = max(xcnts[:, 1])
-
-        width = y_max - y_min
-        height = x_max - x_min
-
-        # check if the aspect ratio and area are bigger or smaller than the ground truth. If it is consistent with
-        # the ground truth, we try to fill it (some signs are not fully segmented because they contain white or other
-        # colors) with cv2.fillPoly.
-        if max_aspect_ratio > height/width > min_aspect_ratio and max_area > width*height > min_area:
-            cv2.fillPoly(pixel_candidates, pts=[contour], color=255)
-        # If the area is too big/small/wide/tall it gets erased from the mask.
-        else:
-            for x in range(y_min-1, y_max+1):
-                for y in range(x_min-1, x_max+1):
-                    pixel_candidates[x, y] = 0
-
-    return pixel_candidates
-
-
 def candidate_generation_pixel_hsvclosing(image):
     return traffic_sign_model.pixel_method(image)
 
