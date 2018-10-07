@@ -120,6 +120,8 @@ def main(args):
     sign_count, max_area, min_area, filling_ratios, max_aspect_ratio, min_aspect_ratio = Data_analysis.shape_analysis\
         (data_hdlr.train_set)
 
+    model = Traffic_sign_model()
+
     for key in filling_ratios.keys():
         print(key + ": " + str(filling_ratios[key]))
 
@@ -128,15 +130,15 @@ def main(args):
 
     print("\nprocessing the val split...\n")
     pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy = \
-        detection.traffic_sign_detection("val", args.images_dir, data_hdlr.valid_set, args.output_dir,
-                                         args.pixelMethod, args.windowMethod)
+        detection.traffic_sign_detection("val", args.images_dir, data_hdlr.valid_set, args.output_dir, 'hsvClosing',
+                                         model.pixel_method, args.windowMethod)
 
     print(pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy)
 
     print("\nprocessing the test split...")
 
-    detection.traffic_sign_detection("test", args.test_dir, data_hdlr.test_set, args.output_dir,
-                                     args.pixelMethod, args.windowMethod)
+    detection.traffic_sign_detection("test", args.test_dir, data_hdlr.test_set, args.output_dir, 'hsvClosing',
+                                     model.pixel_method, args.windowMethod)
 
 
 if __name__ == "__main__":
