@@ -9,20 +9,26 @@ from traffic_signs import traffic_sign_detection as detection
 
 
 class Traffic_sign_model():
-    def pixel_method(self, im, blue_low_hsv= (105, 30, 30), blue_high_hsv= (135, 255, 255), 
-                               red1_low_hsv= (0, 50, 50), red1_high_hsv= (5, 255, 255),
-                               red2_low_hsv= (175, 50, 50), red2_high_hsv= (180, 255, 255)):
+    def __init__(self):
+        self.blue_low_hsv  = (105,   30, 30)
+        self.blue_high_hsv = (135, 255, 255)
+        self.red1_low_hsv  = (0,    50, 50)
+        self.red1_high_hsv = (7,   255, 255)
+        self.red2_low_hsv  = (177,   50, 50)
+        self.red2_high_hsv = (180,  255, 255)
+
+    def pixel_method(self, im):
 
         hsv_image = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
 
-        blue_low   = np.array(blue_low_hsv, dtype='uint8')
-        blue_high  = np.array(blue_high_hsv,    dtype='uint8')
+        blue_low   = np.array(self.blue_low_hsv, dtype='uint8')
+        blue_high  = np.array(self.blue_high_hsv,    dtype='uint8')
         
-        red_1_low  = np.array(red1_low_hsv, dtype='uint8')
-        red_1_high = np.array(red1_high_hsv, dtype='uint8')
+        red_1_low  = np.array(self.red1_low_hsv, dtype='uint8')
+        red_1_high = np.array(self.red1_high_hsv, dtype='uint8')
 
-        red_2_low  = np.array(red2_low_hsv, dtype='uint8')
-        red_2_high = np.array(red2_high_hsv, dtype='uint8')
+        red_2_low  = np.array(self.red2_low_hsv, dtype='uint8')
+        red_2_high = np.array(self.red2_high_hsv, dtype='uint8')
 
         mask_hue_red_1 = cv2.inRange(hsv_image, red_1_low, red_1_high)
         mask_hue_red_2 = cv2.inRange(hsv_image, red_2_low, red_2_high)
@@ -31,7 +37,7 @@ class Traffic_sign_model():
         mask_hue_blue     = cv2.inRange(hsv_image, blue_low, blue_high)
         final_mask        = cv2.bitwise_or(combined_red_mask, mask_hue_blue)        
 
-        self.morph_transformation(final_mask)
+        final_mask = self.morph_transformation(final_mask)
         return final_mask
 
 
