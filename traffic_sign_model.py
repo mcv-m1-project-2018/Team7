@@ -87,7 +87,7 @@ class Traffic_sign_model():
             else:
                 cv2.fillPoly(pixel_candidates, pts=[contour], color=0)
 
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (10, 10))
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (20, 20))
         pixel_candidates = cv2.dilate(pixel_candidates, kernel, iterations=1)
 
         image, contours, hierarchy = cv2.findContours(pixel_candidates, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
@@ -113,10 +113,11 @@ class Traffic_sign_model():
 
     def window_method(self, im, pixel_candidates):
         final_mask = pixel_candidates
+        # window_candidates = [[0,0,1000,1000]]
+        window_candidates = []
 
 
-
-        return final_mask, []
+        return final_mask, window_candidates
 
 
 
@@ -160,7 +161,7 @@ def main(args):
     print("\nprocessing the val split...\n")
     pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy = \
         detection.traffic_sign_detection("val", args.images_dir, data_hdlr.valid_set, args.output_dir, 'hsvClosing',
-                                         model.pixel_method, "None")
+                                         model.pixel_method, model.window_method)
 
 
 

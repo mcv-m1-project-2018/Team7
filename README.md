@@ -21,5 +21,82 @@ The masks of the segmented images are stored in ```OUTPUT_DIR/PIXELMETHOD_WINDOW
 and  ```WINDOWMETHOD``` are the selected pixel and window methods, and ```SPLIT``` is either the validation or the
 test split. 
 
+### Random methods
+This is just to keep track of some of the methods. The names of the methods are random.
+
+#### Method1
+
+Pixel Segmentation Values:
+
+```
+self.blue_low_hsv = (105, 30, 30)
+self.blue_high_hsv = (135, 255, 255)
+self.red1_low_hsv = (0, 50, 50)
+self.red1_high_hsv = (8, 255, 255)
+self.red2_low_hsv = (177, 50, 50)
+self.red2_high_hsv = (181, 255, 255)
+```
+
+Morphological operations:
+
+```
+Open - kernel 5, 5, cv2.MORPH_ELLIPSE
+Close - kernel 10, 10, cv2.MORPH_ELLIPSE
+CCL discarding + cv2.fillPoly
+Dilate - kernel 10, 10, cv2.MORPH_ELLIPSE
+CCL discarding + cv2.fillPoly
+```
+
+No window method <br />
+Scores: 
+
+Precision: 0.50 <br />
+Sensitivity: 0.81 <br />
+Window Precision: 0.5  <br />
+Window Accuracy: 0.24 <br />
+
+#### Method2
+
+Pixel Segmentation Values:
+
+```
+self.blue_low_hsv = (105, 30, 30)
+self.blue_high_hsv = (135, 255, 255)
+self.red1_low_hsv = (0, 50, 50)
+self.red1_high_hsv = (8, 255, 255)
+self.red2_low_hsv = (177, 50, 50)
+self.red2_high_hsv = (181, 255, 255)
+```
+
+Morphological operations:
+
+```
+Open - kernel 5, 5, cv2.MORPH_ELLIPSE
+Close - kernel 10, 10, cv2.MORPH_ELLIPSE
+CCL discarding + cv2.fillPoly
+Dilate - kernel 20, 20, cv2.MORPH_ELLIPSE
+CCL discarding + cv2.fillPoly
+```
+
+No window method <br />
+Scores: 
+
+Precision: 0.41 <br />
+Sensitivity: 0.84 <br />
+Window Precision: 0.5  <br />
+Window Accuracy: 0.24 <br />
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
