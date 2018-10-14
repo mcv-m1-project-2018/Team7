@@ -22,11 +22,13 @@ and  ```WINDOWMETHOD``` are the selected pixel and window methods, and ```SPLIT`
 test split. 
 
 ### Random methods
-This is just to keep track of some of the methods. The names of the methods are random.
+I use this to keep track of some methods and the values used in them, just so I don't forget them. The names of the 
+methods are random, ignore them. <br />
+Method1, Method2, Method3, use different values in the kernel used in the last dilatation. 
 
 #### Method1
 
-Pixel Segmentation Values:
+* Pixel Segmentation Values:
 
 ```
 self.blue_low_hsv = (105, 30, 30)
@@ -37,7 +39,7 @@ self.red2_low_hsv = (177, 50, 50)
 self.red2_high_hsv = (181, 255, 255)
 ```
 
-Morphological operations:
+* Morphological operations:
 
 ```
 Open - kernel 5, 5, cv2.MORPH_ELLIPSE
@@ -47,7 +49,8 @@ Dilate - kernel 10, 10, cv2.MORPH_ELLIPSE
 CCL discarding + cv2.fillPoly
 ```
 
-No window method <br />
+* No window method <br />
+
 Scores: 
 
 Precision: 0.50 <br />
@@ -57,7 +60,7 @@ Window Accuracy: 0.24 <br />
 
 #### Method2
 
-Pixel Segmentation Values:
+* Pixel Segmentation Values:
 
 ```
 self.blue_low_hsv = (105, 30, 30)
@@ -68,7 +71,7 @@ self.red2_low_hsv = (177, 50, 50)
 self.red2_high_hsv = (181, 255, 255)
 ```
 
-Morphological operations:
+* Morphological operations:
 
 ```
 Open - kernel 5, 5, cv2.MORPH_ELLIPSE
@@ -78,7 +81,8 @@ Dilate - kernel 20, 20, cv2.MORPH_ELLIPSE
 CCL discarding + cv2.fillPoly
 ```
 
-No window method <br />
+* No window method <br />
+
 Scores: 
 
 Precision: 0.41 <br />
@@ -87,7 +91,37 @@ Window Precision: 0.5  <br />
 Window Accuracy: 0.24 <br />
 
 
+#### Method3
 
+* Pixel Segmentation Values:
+
+```
+self.blue_low_hsv = (105, 30, 30)
+self.blue_high_hsv = (135, 255, 255)
+self.red1_low_hsv = (0, 50, 50)
+self.red1_high_hsv = (8, 255, 255)
+self.red2_low_hsv = (177, 50, 50)
+self.red2_high_hsv = (181, 255, 255)
+```
+
+* Morphological operations:
+
+```
+Open - kernel 5, 5, cv2.MORPH_ELLIPSE
+Close - kernel 10, 10, cv2.MORPH_ELLIPSE
+CCL discarding + cv2.fillPoly
+Dilate - kernel 7, 7, cv2.MORPH_ELLIPSE
+CCL discarding + cv2.fillPoly
+```
+
+* No window method <br />
+
+Scores: 
+
+Precision: 0.54 <br />
+Sensitivity: 0.78 <br />
+Window Precision: 0.5  <br />
+Window Accuracy: 0.24 <br />
 
 
 

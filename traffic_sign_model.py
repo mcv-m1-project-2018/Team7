@@ -87,7 +87,7 @@ class Traffic_sign_model():
             else:
                 cv2.fillPoly(pixel_candidates, pts=[contour], color=0)
 
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (20, 20))
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
         pixel_candidates = cv2.dilate(pixel_candidates, kernel, iterations=1)
 
         image, contours, hierarchy = cv2.findContours(pixel_candidates, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
