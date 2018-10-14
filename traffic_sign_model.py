@@ -5,9 +5,6 @@ import cv2
 from data import Data_handler
 from data_analysis import Data_analysis
 from traffic_signs import traffic_sign_detection as detection
-import matplotlib.pyplot as plt
-import matplotlib.patches as pat
-
 
 
 class Traffic_sign_model():
@@ -18,6 +15,7 @@ class Traffic_sign_model():
         self.red1_high_hsv = (8, 255, 255)
         self.red2_low_hsv = (177, 50, 50)
         self.red2_high_hsv = (181, 255, 255)
+
 
     def pixel_method(self, im):
 
@@ -114,8 +112,13 @@ class Traffic_sign_model():
 
 
     def window_method(self, im, pixel_candidates):
-        pass
-        # return window_candidates
+        final_mask = pixel_candidates
+
+
+
+        return final_mask, []
+
+
 
     def tuning_f1(self,train_set,valid_set):
         pass
@@ -143,8 +146,8 @@ def main(args):
     # sign_count, max_area, min_area, filling_ratios, max_aspect_ratio, min_aspect_ratio = Data_analysis.shape_analysis\
     #     (data_hdlr.train_set)
 
-    print("Creating templates...\n")
-    Data_analysis.create_templates(data_hdlr.train_set)
+    # print("Creating templates...\n")
+    # Data_analysis.create_templates(data_hdlr.train_set)
 
     model = Traffic_sign_model()
     #
@@ -154,12 +157,14 @@ def main(args):
     # print("sign_count: ", sign_count, "\n", "max_area: ", max_area, "\n", "min_area: ", min_area,
     #       "\n", "max_aspect_ratio: ", max_aspect_ratio, "\n", "min_aspect_ratio: ", min_aspect_ratio)
 
-    # print("\nprocessing the val split...\n")
-    # pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy = \
-    #     detection.traffic_sign_detection("val", args.images_dir, data_hdlr.valid_set, args.output_dir, 'hsvClosing',
-    #                                      model.pixel_method, args.windowMethod)
-    #
-    # print(pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy)
+    print("\nprocessing the val split...\n")
+    pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy = \
+        detection.traffic_sign_detection("val", args.images_dir, data_hdlr.valid_set, args.output_dir, 'hsvClosing',
+                                         model.pixel_method, "None")
+
+
+
+    print(pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy)
     #
     # print("\nprocessing the test split...")
     #

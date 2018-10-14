@@ -74,7 +74,7 @@ def traffic_sign_detection(split, directory, split_instances, output_dir, pixel_
             #pixel_candidates = candidate_generation_pixel(image, pixel_method)
             pixel_candidates = pixel_method(image)
 
-            fd = '{}/{}_{}_{}'.format(output_dir, pixel_method_name, window_method, split)
+            fd = '{}/{}_{}_{}'.format(output_dir, pixel_method_name, "win_method", split)
             if not os.path.exists(fd):
                 os.makedirs(fd)
 
@@ -83,7 +83,8 @@ def traffic_sign_detection(split, directory, split_instances, output_dir, pixel_
 
 
             if window_method != 'None':
-                window_candidates = candidate_generation_window(image, pixel_candidates, window_method)
+                # window_candidates = candidate_generation_window(image, pixel_candidates, window_method)
+                pixel_candidates, window_candidates = window_method(image, pixel_candidates)
 
                 out_list_name = '{}/{}.pkl'.format(fd, id_)
 
@@ -108,9 +109,9 @@ def traffic_sign_detection(split, directory, split_instances, output_dir, pixel_
                 window_annotationss = load_annotations('{}/gt/gt.{}.txt'.format(directory, id_))
                 [localWindowTP, localWindowFN, localWindowFP] = performance_accumulation_window(window_candidates, window_annotationss)
 
-                windowTP = windowTP + localWindowTP
-                windowFN = windowFN + localWindowFN
-                windowFP = windowFP + localWindowFP
+                windowTP = windowTP + localWindowTP + 1
+                windowFN = windowFN + localWindowFN + 1
+                windowFP = windowFP + localWindowFP + 1
 
 
                 # Plot performance evaluation
