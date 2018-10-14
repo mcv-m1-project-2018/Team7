@@ -54,12 +54,12 @@ class Data_analysis():
         maxcomp = 3
         for key in signs_by_type:
             mean = np.asarray(signs_by_type[key]).mean(axis=0)
-            plt.imsave("./data/mean_" + key + ".png", mean.astype(dtype=int), cmap='gray')
+            plt.imsave("./data/templates/mean_" + key + ".png", mean.astype(dtype=int), cmap='gray')
 
             mean, eigenVectors = cv2.PCACompute(np.asarray(signs_by_type[key]).reshape(len(signs_by_type[key]), 10000),
                                                 mean=None, maxComponents=maxcomp)
             for i in range(maxcomp):
-                plt.imsave("./data/" + "eVector_" + key + "_" + str(i) + ".png",
+                plt.imsave("./data/templates/" + "eVector_" + key + "_" + str(i) + ".png",
                            eigenVectors[i].reshape(100, 100), cmap='gray')
 
         return

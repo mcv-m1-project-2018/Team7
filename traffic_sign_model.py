@@ -1,3 +1,5 @@
+import os
+
 import argparse
 import numpy as np
 import cv2
@@ -87,7 +89,7 @@ class Traffic_sign_model():
             else:
                 cv2.fillPoly(pixel_candidates, pts=[contour], color=0)
 
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (10, 10))
         pixel_candidates = cv2.dilate(pixel_candidates, kernel, iterations=1)
 
         image, contours, hierarchy = cv2.findContours(pixel_candidates, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
@@ -113,9 +115,58 @@ class Traffic_sign_model():
 
     def window_method(self, im, pixel_candidates):
         final_mask = pixel_candidates
-        # window_candidates = [[0,0,1000,1000]]
         window_candidates = []
 
+        # read the templates
+        templates = []
+        template_filenames = os.listdir("./data/templates/")
+        for filename in template_filenames:
+            template = cv2.imread("./data/templates/"+filename)
+            template = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY).astype(np.float32)
+            templates.append(template)
+
+        _, contours, _ = cv2.findContours(pixel_candidates, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+
+        # process every region found
+        for contour in contours:
+            xcnts = np.vstack(contour.reshape(-1, 2))
+            x_min = min(xcnts[:, 0])
+            x_max = max(xcnts[:, 0])
+            y_min = min(xcnts[:, 1])
+            y_max = max(xcnts[:, 1])
+            padding = 30
+            region = im[max(0, y_min-padding):min(im.shape[0], y_max+padding),
+                        max(0, x_min-padding):min(im.shape[1], x_max+padding)]
+            region = cv2.cvtColor(region, cv2.COLOR_RGB2HSV)[:,:,0].astype(np.float32)
+
+            dsize = min(region.shape)
+            max_score = 0
+            scalars = [0.5, 0.6, 0.7, 0.8, 0.9, 1]
+
+            print((dsize, dsize), ", ", region.shape)
+
+            for template in templates:
+                for scalar in scalars:
+                    dsize_scaled = int(dsize*scalar)
+                    template_g = cv2.resize(template, dsize=(dsize_scaled, dsize_scaled), interpolation=cv2.INTER_CUBIC)
+                    res = cv2.matchTemplate(region, template_g, cv2.TM_CCOEFF_NORMED)
+                    max_temp_score = np.max(res)
+
+                    if max_temp_score > max_score:
+                        max_score = max_temp_score
+            if max_score < .8:
+                cv2.fillPoly(pixel_candidates, pts=[contour], color=0)
+
+        # calculates the windows for all the regions
+        _, contours, _ = cv2.findContours(pixel_candidates, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+
+        for contour in contours:
+            xcnts = np.vstack(contour.reshape(-1, 2))
+            x_min = min(xcnts[:, 0])
+            x_max = max(xcnts[:, 0])
+            y_min = min(xcnts[:, 1])
+            y_max = max(xcnts[:, 1])
+            window_candidates.append([y_min, x_min, y_max, x_max])
 
         return final_mask, window_candidates
 
@@ -149,9 +200,9 @@ def main(args):
 
     # print("Creating templates...\n")
     # Data_analysis.create_templates(data_hdlr.train_set)
-
-    model = Traffic_sign_model()
     #
+    # model = Traffic_sign_model()
+
     # for key in filling_ratios.keys():
     #     print(key + ": " + str(filling_ratios[key]))
     #
@@ -163,14 +214,13 @@ def main(args):
         detection.traffic_sign_detection("val", args.images_dir, data_hdlr.valid_set, args.output_dir, 'hsvClosing',
                                          model.pixel_method, model.window_method)
 
-
-
     print(pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy)
-    #
+
+
     # print("\nprocessing the test split...")
     #
     # detection.traffic_sign_detection("test", args.test_dir, data_hdlr.test_set, args.output_dir, 'hsvClosing',
-    #                                  model.pixel_method, args.windowMethod)
+    #                                  model.pixel_method, model.window_method)
 
 
 if __name__ == "__main__":
