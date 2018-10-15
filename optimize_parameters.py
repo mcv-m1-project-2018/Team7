@@ -169,26 +169,28 @@ train_split = train_set
 directory = "./train/"
 
 parameters = { #[optimal_value, start_range, end_range]
-    'blue_low_h': [105, 90, 140],
-    'blue_low_s': [30, 20, 255],
-    'blue_low_v': [30, 20, 255],
-    'blue_high_h': [135, 90, 140],
-    'blue_high_s': [255, 20, 255],
-    'blue_high_v': [255, 20, 255],
+    'blue_low_h': [104, 90, 140],
+    'blue_low_s': [49, 20, 255],
+    'blue_low_v': [31, 20, 255],
+    'blue_high_h': [136, 90, 140],
+    'blue_high_s': [254, 20, 255],
+    'blue_high_v': [239, 20, 255],
     'red1_low_h': [0, 0, 25],
-    'red1_low_s': [50, 20, 255],
-    'red1_low_v': [50, 20, 255],
-    'red1_high_h': [8, 0, 25],
+    'red1_low_s': [67, 20, 255],
+    'red1_low_v': [55, 20, 255],
+    'red1_high_h': [7, 0, 25],
     'red1_high_s': [255, 20, 255],
     'red1_high_v': [255, 20, 255],
-    'red2_low_h': [177, 165, 180],
-    'red2_low_s': [50, 20, 255],
-    'red2_low_v': [50, 20, 255],
+    'red2_low_h': [178, 165, 180],
+    'red2_low_s': [66, 20, 255],
+    'red2_low_v': [56, 20, 255],
     'red2_high_h': [180, 165, 180],
     'red2_high_s': [255, 20, 255],
-    'red2_high_v': [255, 20, 255],
+    'red2_high_v': [249, 20, 255],
 }
 
+with open('optimization_parameters.log', "a") as f:
+    f.write("*************************************************\n")
 t1 = time.time()
 
 blue_low_hsv = (parameters['blue_low_h'][0], parameters['blue_low_s'][0], parameters['blue_low_v'][0])
@@ -209,52 +211,56 @@ red2_high_hsv = (parameters['red2_high_h'][0], parameters['red2_high_s'][0], par
     )
 
 current_max_value = score(precision=pixel_precision, sensitivity=pixel_sensitivity)
-
+currrent_precision = pixel_precision
+current_sensitivity = pixel_sensitivity
+last_current_max_value = 0
 ########################################## OPTIMIZATION ###############################################################
+while(current_max_value - last_current_max_value > 0.001):
+    last_current_max_value = current_max_value
+    for parameter in parameters:
 
-for parameter in parameters:
+        print("*************************************")
+        print("optimizing  "+parameter+"  ...")
+        current_parameter = parameters[parameter][0]
+        start_range = max(parameters[parameter][1], current_parameter - MAX_RANGE//2)
+        end_range = min(parameters[parameter][2], current_parameter + MAX_RANGE//2)
 
-    print("*************************************")
-    print("optimizing  "+parameter+"  ...")
-    current_parameter = parameters[parameter][0]
-    start_range = max(parameters[parameter][1], current_parameter - MAX_RANGE//2)
-    end_range = min(parameters[parameter][2], current_parameter + MAX_RANGE//2)
+        for p in range(start_range, end_range):
+            if(p!=current_parameter):
+                print(p)
+                parameters[parameter][0] = p
+                blue_low_hsv = (parameters['blue_low_h'][0], parameters['blue_low_s'][0], parameters['blue_low_v'][0])
+                blue_high_hsv = (parameters['blue_high_h'][0], parameters['blue_high_s'][0], parameters['blue_high_v'][0])
+                red1_low_hsv = (parameters['red1_low_h'][0], parameters['red1_low_s'][0], parameters['red1_low_v'][0])
+                red1_high_hsv = (parameters['red1_high_h'][0], parameters['red1_high_s'][0], parameters['red1_high_v'][0])
+                red2_low_hsv = (parameters['red2_low_h'][0], parameters['red2_low_s'][0], parameters['red2_low_v'][0])
+                red2_high_hsv = (parameters['red2_high_h'][0], parameters['red2_high_s'][0], parameters['red2_high_v'][0])
 
-    for p in range(start_range, end_range):
-        if(p!=current_parameter):
-            print(p)
-            parameters[parameter][0] = p
-            blue_low_hsv = (parameters['blue_low_h'][0], parameters['blue_low_s'][0], parameters['blue_low_v'][0])
-            blue_high_hsv = (parameters['blue_high_h'][0], parameters['blue_high_s'][0], parameters['blue_high_v'][0])
-            red1_low_hsv = (parameters['red1_low_h'][0], parameters['red1_low_s'][0], parameters['red1_low_v'][0])
-            red1_high_hsv = (parameters['red1_high_h'][0], parameters['red1_high_s'][0], parameters['red1_high_v'][0])
-            red2_low_hsv = (parameters['red2_low_h'][0], parameters['red2_low_s'][0], parameters['red2_low_v'][0])
-            red2_high_hsv = (parameters['red2_high_h'][0], parameters['red2_high_s'][0], parameters['red2_high_v'][0])
+                [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity] = evaluate_parameters(
+                    train_split=train_split,
+                    blue_low_hsv=blue_low_hsv,
+                    blue_high_hsv=blue_high_hsv,
+                    red1_low_hsv=red1_low_hsv,
+                    red1_high_hsv=red1_high_hsv,
+                    red2_low_hsv=red2_low_hsv,
+                    red2_high_hsv=red2_high_hsv
+                    )
+                value = score(precision=pixel_precision, sensitivity=pixel_sensitivity)
+                print(value)
+                if (value > current_max_value):
+                    current_parameter = p
+                    current_max_value = value
+                    current_precision = pixel_precision
+                    current_sensitivity = pixel_sensitivity
 
-            [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity] = evaluate_parameters(
-                train_split=train_split,
-                blue_low_hsv=blue_low_hsv,
-                blue_high_hsv=blue_high_hsv,
-                red1_low_hsv=red1_low_hsv,
-                red1_high_hsv=red1_high_hsv,
-                red2_low_hsv=red2_low_hsv,
-                red2_high_hsv=red2_high_hsv
-                )
-            value = score(precision=pixel_precision, sensitivity=pixel_sensitivity)
-            print(value)
-            if (value > current_max_value):
-                current_parameter = p
-                current_max_value = value
-                current_precision = pixel_precision
-                current_sensitivity = pixel_sensitivity
+        parameters[parameter][0] = current_parameter
+        save_progress(parameters=parameters,
+                      parameter=parameter,
+                      t1=t1,
+                      current_max_value=current_max_value,
+                      current_precision=current_precision,
+                      current_sensitivity=current_sensitivity)
 
-    parameters[parameter][0] = current_parameter
-    save_progress(parameters=parameters,
-                  parameter=parameter,
-                  t1=t1,
-                  current_max_value=current_max_value,
-                  current_precision=current_precision,
-                  current_sensitivity=current_sensitivity)
 
 
 
