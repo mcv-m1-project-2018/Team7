@@ -117,10 +117,13 @@ class Traffic_sign_model():
 
         return pixel_candidates
 
-    def template_matching(self, im, pixel_candidates, show=False):
+    def template_matching(self, im, pixel_candidates, threshold=.6, show=False):
         """
+        Matches the templates found in ./data/templates with the candidate regions of the image. Keeps those with
+        a higher score than the threshold.
         :param im: the image (in bgr)
         :param pixel_candidates: the mask
+        :param threshold: threshold score for the different areas.
         :param show: if true shows the regions and their scores
         :return: mask, window_candidates
         """
@@ -150,13 +153,14 @@ class Traffic_sign_model():
             y_min = min(xcnts[:, 1])
             y_max = max(xcnts[:, 1])
             padding = 30
+            # cops the interest region + a padding
             region = im[max(0, y_min - padding):min(im.shape[0], y_max + padding),
                      max(0, x_min - padding):min(im.shape[1], x_max + padding)]
             region = cv2.cvtColor(region, cv2.COLOR_RGB2GRAY).astype(np.float32)
 
             dsize = min(region.shape)
             max_score = 0
-            scalars = [1]
+            scalars = [1]  # this is to give different scales to the template, not sure if we should use it
 
             # print((dsize, dsize), ", ", region.shape)
 
@@ -176,7 +180,7 @@ class Traffic_sign_model():
                 plt.text(x_min, y_min, str(max_score), color="red", size=15)
                 ax.add_patch(rec)
 
-            if max_score < .60:  # what value should we use? well I dont know, because the template matching ssucks
+            if max_score < threshold:  # delete the region if the score is too low
                 cv2.fillPoly(pixel_candidates, pts=[contour], color=0)
         if show:
             plt.show()
