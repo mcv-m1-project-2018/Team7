@@ -3,6 +3,13 @@ train/*
 test/*
 results/
 
+#Template folders
+data/A
+data/B
+data/C
+data/D
+data/E
+data/F
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

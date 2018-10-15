@@ -3,8 +3,73 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 import cv2
 from data import Data_handler
+import os
+import numpy as np
+
 
 class Data_analysis():
+    @staticmethod
+    def create_templates(train_split, keep_background=True):
+        """
+        Creates the templates.
+        :param train_split: the train split
+        :param keep_background: set to false to remove the background
+        :return:
+        """
+        signs_by_type = defaultdict(list)
+        count = 0
+        for image in train_split:
+            im = cv2.imread(image.img)
+            im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+
+            if not keep_background:
+                mask = cv2.imread(image.msk)
+                im = cv2.bitwise_and(im, im, mask=mask[:, :, 0].astype(dtype=np.uint8))
+
+            for ann in image.annotations:
+                count += 1
+                bbox = ann[0]
+
+                tall = False
+                height = int(bbox[2]) - int(bbox[0])
+                width = int(bbox[3]) - int(bbox[1])
+
+                if height > width:
+                    diff = height - width
+                    bbox[3] = int(bbox[3]) + diff
+                    bbox[1] = int(bbox[1]) - diff
+                    if (height / width) > 1.1:
+                        tall = True
+                else:
+                    diff = width - height
+                    bbox[2] = int(bbox[2]) + diff
+                    bbox[0] = int(bbox[0]) - diff
+
+                sign = im[int(bbox[0]): int(bbox[2]), int(bbox[1]): int(bbox[3]), :]
+                sign = cv2.resize(sign, dsize=(100, 100), interpolation=cv2.INTER_CUBIC)
+                if not os.path.isdir('./data/' + ann[1]):
+                    os.mkdir('./data/' + ann[1])
+                if ann[1] == 'F':
+                    key_extension = '_1' if tall else '_2'
+                    signs_by_type[ann[1] + key_extension].append(cv2.cvtColor(sign, cv2.COLOR_BGR2GRAY))
+                else:
+                    signs_by_type[ann[1]].append(cv2.cvtColor(sign, cv2.COLOR_BGR2GRAY))
+                plt.imsave("./data/" + ann[1] + "/" + str(count) + ".png", sign)
+
+        # maxcomp = 3
+        # for key in signs_by_type:
+        #     mean = np.asarray(signs_by_type[key]).mean(axis=0)
+        #     plt.imsave("./data/templates/mean_" + key + ".png", mean.astype(dtype=int), cmap='gray')
+        #
+        #     mean, eigenVectors = cv2.PCACompute(np.asarray(signs_by_type[key]).reshape(len(signs_by_type[key]), 10000),
+        #                                         mean=None, maxComponents=maxcomp)
+        #     for i in range(maxcomp):
+        #         plt.imsave("./data/templates/" + "eVector_" + key + "_" + str(i) + ".png",
+        #                    eigenVectors[i].reshape(100, 100), cmap='gray')
+
+
+        return
+
     @staticmethod
     def shape_analysis(train_split):
         """

@@ -6,7 +6,7 @@ from data import Data_handler
 from data_analysis import Data_analysis
 from traffic_signs import traffic_sign_detection as detection
 import matplotlib.pyplot as plt
-
+import os
 
 
 class Traffic_sign_model():
@@ -117,6 +117,82 @@ class Traffic_sign_model():
 
         return pixel_candidates
 
+    def template_matching(self, im, pixel_candidates, show=False):
+        """
+        :param im: the image (in bgr)
+        :param pixel_candidates: the mask
+        :param show: if true shows the regions and their scores
+        :return: mask, window_candidates
+        """
+        final_mask = pixel_candidates
+        window_candidates = []
+
+        # read the templates
+        templates = []
+        template_filenames = os.listdir("./data/templates/")
+        for filename in template_filenames:
+            template = cv2.imread("./data/templates/" + filename)
+            template = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY).astype(np.float32)
+            templates.append(template)
+
+        _, contours, _ = cv2.findContours(pixel_candidates, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        if show:
+            import matplotlib.pyplot as plt
+            import matplotlib.patches as pat
+            fig, ax = plt.subplots(1)
+            ax.imshow(im, cmap="gray")
+
+        # process every region found
+        for contour in contours:
+            xcnts = np.vstack(contour.reshape(-1, 2))
+            x_min = min(xcnts[:, 0])
+            x_max = max(xcnts[:, 0])
+            y_min = min(xcnts[:, 1])
+            y_max = max(xcnts[:, 1])
+            padding = 30
+            region = im[max(0, y_min - padding):min(im.shape[0], y_max + padding),
+                     max(0, x_min - padding):min(im.shape[1], x_max + padding)]
+            region = cv2.cvtColor(region, cv2.COLOR_RGB2GRAY).astype(np.float32)
+
+            dsize = min(region.shape)
+            max_score = 0
+            scalars = [1]
+
+            # print((dsize, dsize), ", ", region.shape)
+
+            for template in templates:
+                for scalar in scalars:
+                    dsize_scaled = int(dsize * scalar)
+                    template_g = cv2.resize(template, dsize=(dsize_scaled, dsize_scaled), interpolation=cv2.INTER_CUBIC)
+                    res = cv2.matchTemplate(region, template_g, cv2.TM_CCOEFF_NORMED)
+                    max_temp_score = np.max(res)
+
+                    if max_temp_score > max_score:
+                        max_score = max_temp_score
+            if show:
+                rec = pat.Rectangle((x_min - padding, y_min - padding), (x_max + padding) - (x_min - padding),
+                                    (y_max + padding) - (y_min - padding)
+                                    , linewidth=1, edgecolor='r', facecolor='none')
+                plt.text(x_min, y_min, str(max_score), color="red", size=15)
+                ax.add_patch(rec)
+
+            if max_score < .60:  # what value should we use? well I dont know, because the template matching ssucks
+                cv2.fillPoly(pixel_candidates, pts=[contour], color=0)
+        if show:
+            plt.show()
+
+        # calculates the windows for all the regions
+        _, contours, _ = cv2.findContours(pixel_candidates, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+
+        for contour in contours:
+            xcnts = np.vstack(contour.reshape(-1, 2))
+            x_min = min(xcnts[:, 0])
+            x_max = max(xcnts[:, 0])
+            y_min = min(xcnts[:, 1])
+            y_max = max(xcnts[:, 1])
+            window_candidates.append([y_min, x_min, y_max, x_max])
+
+        return final_mask, window_candidates
 
     def window_method(self, im, pixel_candidates):
         pass
@@ -147,6 +223,8 @@ def main(args):
     # print("analyzing the train split...\n")
     # sign_count, max_area, min_area, filling_ratios, max_aspect_ratio, min_aspect_ratio = Data_analysis.shape_analysis\
     #     (data_hdlr.train_set)
+
+    # Data_analysis.create_templates(data_hdlr.train_set)
 
     model = Traffic_sign_model()
     #
