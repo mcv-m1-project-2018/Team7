@@ -113,7 +113,13 @@ class Traffic_sign_model():
         return pixel_candidates
 
 
-    def window_method(self, im, pixel_candidates):
+    def window_method(self, im, pixel_candidates, show=False):
+        """
+        :param im: the image (in bgr)
+        :param pixel_candidates: the mask
+        :param show: if true shows the regions and their scores
+        :return: mask, window_candidates
+        """
         final_mask = pixel_candidates
         window_candidates = []
 
@@ -126,6 +132,11 @@ class Traffic_sign_model():
             templates.append(template)
 
         _, contours, _ = cv2.findContours(pixel_candidates, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        if show:
+            import matplotlib.pyplot as plt
+            import matplotlib.patches as pat
+            fig, ax = plt.subplots(1)
+            ax.imshow(im, cmap="gray")
 
         # process every region found
         for contour in contours:
@@ -137,11 +148,11 @@ class Traffic_sign_model():
             padding = 30
             region = im[max(0, y_min-padding):min(im.shape[0], y_max+padding),
                         max(0, x_min-padding):min(im.shape[1], x_max+padding)]
-            region = cv2.cvtColor(region, cv2.COLOR_RGB2HSV)[:,:,0].astype(np.float32)
+            region = cv2.cvtColor(region, cv2.COLOR_RGB2GRAY).astype(np.float32)
 
             dsize = min(region.shape)
             max_score = 0
-            scalars = [0.5, 0.6, 0.7, 0.8, 0.9, 1]
+            scalars = [1]
 
             print((dsize, dsize), ", ", region.shape)
 
@@ -154,8 +165,16 @@ class Traffic_sign_model():
 
                     if max_temp_score > max_score:
                         max_score = max_temp_score
-            if max_score < .8:
+            if show:
+                rec = pat.Rectangle((x_min-padding,y_min-padding), (x_max+padding)-(x_min-padding),(y_max+padding)-(y_min-padding)
+                                    , linewidth=1, edgecolor='r', facecolor='none')
+                plt.text(x_min, y_min, str(max_score), color="red", size=15)
+                ax.add_patch(rec)
+
+            if max_score < .60:  # what value should we use? well I dont know, because the template matching ssucks
                 cv2.fillPoly(pixel_candidates, pts=[contour], color=0)
+        if show:
+            plt.show()
 
         # calculates the windows for all the regions
         _, contours, _ = cv2.findContours(pixel_candidates, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
@@ -198,9 +217,9 @@ def main(args):
     # sign_count, max_area, min_area, filling_ratios, max_aspect_ratio, min_aspect_ratio = Data_analysis.shape_analysis\
     #     (data_hdlr.train_set)
 
-    # print("Creating templates...\n")
-    # Data_analysis.create_templates(data_hdlr.train_set)
-    #
+    print("Creating templates...\n")
+    Data_analysis.create_templates(data_hdlr.train_set)
+
     # model = Traffic_sign_model()
 
     # for key in filling_ratios.keys():
@@ -209,13 +228,13 @@ def main(args):
     # print("sign_count: ", sign_count, "\n", "max_area: ", max_area, "\n", "min_area: ", min_area,
     #       "\n", "max_aspect_ratio: ", max_aspect_ratio, "\n", "min_aspect_ratio: ", min_aspect_ratio)
 
-    print("\nprocessing the val split...\n")
-    pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy = \
-        detection.traffic_sign_detection("val", args.images_dir, data_hdlr.valid_set, args.output_dir, 'hsvClosing',
-                                         model.pixel_method, model.window_method)
-
-    print(pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy)
-
+    # print("\nprocessing the val split...\n")
+    # pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy = \
+    #     detection.traffic_sign_detection("val", args.images_dir, data_hdlr.valid_set, args.output_dir, 'hsvClosing',
+    #                                      model.pixel_method, model.window_method)
+    #
+    # print(pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy)
+    #
 
     # print("\nprocessing the test split...")
     #
