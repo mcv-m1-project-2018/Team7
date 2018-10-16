@@ -7,47 +7,83 @@ from data_analysis import Data_analysis
 from traffic_signs import traffic_sign_detection as detection
 import matplotlib.pyplot as plt
 import os
-
+import time
 
 class Traffic_sign_model():
     def __init__(self):
-        self.blue_low_hsv = (105, 30, 30)
-        self.blue_high_hsv = (135, 255, 255)
-        self.red1_low_hsv = (0, 50, 50)
-        self.red1_high_hsv = (8, 255, 255)
-        self.red2_low_hsv = (177, 50, 50)
-        self.red2_high_hsv = (181, 255, 255)
+        self.parameters= {  # [optimal_value, start_range, end_range]
+            'blue_low_h': [104, 90, 140],
+            'blue_low_s': [49, 20, 255],
+            'blue_low_v': [31, 20, 255],
+            'blue_high_h': [136, 90, 140],
+            'blue_high_s': [254, 20, 255],
+            'blue_high_v': [239, 20, 255],
+            'red1_low_h': [0, 0, 25],
+            'red1_low_s': [67, 20, 255],
+            'red1_low_v': [55, 20, 255],
+            'red1_high_h': [7, 0, 25],
+            'red1_high_s': [255, 20, 255],
+            'red1_high_v': [255, 20, 255],
+            'red2_low_h': [178, 165, 180],
+            'red2_low_s': [66, 20, 255],
+            'red2_low_v': [56, 20, 255],
+            'red2_high_h': [180, 165, 180],
+            'red2_high_s': [255, 20, 255],
+            'red2_high_v': [249, 20, 255],
+        }
+        self.MAX_RANGE = 40 #max range to search for optimal parameter
 
-    def pixel_method(self, im):
+    def color_segmentation(self, im):
+        """
+        Color segmentation of red and blue regions
+        :param im: BGR image
+        :return: mask with the color segmentation
+        """
 
         hsv_image = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
 
-        blue_low   = np.array(self.blue_low_hsv, dtype='uint8')
-        blue_high  = np.array(self.blue_high_hsv, dtype='uint8')
-        
-        red_1_low  = np.array(self.red1_low_hsv, dtype='uint8')
-        red_1_high = np.array(self.red1_high_hsv, dtype='uint8')
+        blue_low = np.array(
+            (self.parameters['blue_low_h'], self.parameters['blue_low_s'], self.parameters['blue_low_v']),
+            dtype='uint8')
+        blue_high = np.array(
+            (self.parameters['blue_high_h'], self.parameters['blue_high_s'], self.parameters['blue_high_v']),
+            dtype='uint8')
 
-        red_2_low  = np.array(self.red2_low_hsv, dtype='uint8')
-        red_2_high = np.array(self.red2_high_hsv, dtype='uint8')
+        red_1_low = np.array(
+            (self.parameters['red1_low_h'], self.parameters['red1_low_s'], self.parameters['red1_low_v']),
+            dtype='uint8')
+        red_1_high = np.array(
+            (self.parameters['red1_high_h'], self.parameters['red1_high_s'], self.parameters['red1_high_v']),
+            dtype='uint8')
+
+        red_2_low = np.array(
+            (self.parameters['red2_low_h'], self.parameters['red2_low_s'], self.parameters['red2_low_v']),
+            dtype='uint8')
+        red_2_high = np.array(
+            (self.parameters['red2_high_h'], self.parameters['red2_high_s'], self.parameters['red2_high_v']),
+            dtype='uint8')
 
         mask_hue_red_1 = cv2.inRange(hsv_image, red_1_low, red_1_high)
         mask_hue_red_2 = cv2.inRange(hsv_image, red_2_low, red_2_high)
 
         combined_red_mask = cv2.bitwise_or(mask_hue_red_1, mask_hue_red_2)
-        mask_hue_blue     = cv2.inRange(hsv_image, blue_low, blue_high)
-        final_mask        = cv2.bitwise_or(combined_red_mask, mask_hue_blue)
-
-        # f, axarr = plt.subplots(1, 2)
-        # axarr[0].imshow(final_mask)
-
-        final_mask = self.morph_transformation(final_mask)
-
-        # axarr[1].imshow(final_mask)
-        # plt.show()
+        mask_hue_blue = cv2.inRange(hsv_image, blue_low, blue_high)
+        final_mask = cv2.bitwise_or(combined_red_mask, mask_hue_blue)
 
         return final_mask
 
+    def pixel_method(self, im):
+        """
+        Color segmentation of red and blue regions and morphological transformations
+        :param im: BGR image
+        :return: mask with the pixel candidates
+        """
+
+        color_segmentation_mask = self.color_segmentation(im)
+
+        pixel_candidates = self.morph_transformation(color_segmentation_mask)
+
+        return pixel_candidates
 
     def morph_transformation(self, pixel_candidates):
         """
@@ -204,6 +240,68 @@ class Traffic_sign_model():
 
     def tuning_f1(self,train_set,valid_set):
         pass
+
+####################################################### PARAMETER OPTIMIZATION ##################################################
+    def save_progress(self, parameter, t1, current_max_value, current_precision, current_sensitivity):
+        with open('optimization_parameters.log', "a") as f:
+            f.write("-------------------------------- " + parameter + "\n")
+            f.write("total time: " + str((time.time() - t1) / 60) + " min\n")
+            f.write(str(self.parameters) + "\n")
+            f.write("Score: " + str(current_max_value) + "\n")
+            f.write("Precision: " + str(current_precision) + "\n")
+            f.write("Sensitivity: " + str(current_sensitivity) + "\n")
+        print("-------------------------------- " + parameter)
+        print("total time: " + str((time.time() - t1) / 60) + " min\n")
+        print(str(self.parameters))
+        print("Score: " + str(current_max_value))
+        print("Precision: " + str(current_precision))
+        print("Sensitivity: " + str(current_sensitivity))
+
+    def score(precision, sensitivity): #Score function to be optimised
+        return 0.7 * sensitivity + 0.3 * precision
+
+    def optimize_parameters(self, train_set):
+
+        with open('optimization_parameters.log', "a") as f:
+            f.write("********************* New Execution ***************************\n")
+        t1 = time.time()
+
+        [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity] = self.evaluate_parameters() #TO DO
+
+        current_max_value = self.score(precision=pixel_precision, sensitivity=pixel_sensitivity)
+        currrent_precision = pixel_precision
+        current_sensitivity = pixel_sensitivity
+        last_current_max_value = 0
+
+        while (current_max_value - last_current_max_value > 0.001): #Tune to redefine when we consider the parameters have converged
+            last_current_max_value = current_max_value
+            for parameter in self.parameters:
+
+                current_parameter = self.parameters[parameter][0]
+                start_range = max(self.parameters[parameter][1], current_parameter - MAX_RANGE // 2)
+                end_range = min(self.parameters[parameter][2], current_parameter + MAX_RANGE // 2)
+
+                for p in range(start_range, end_range):
+                    if (p != current_parameter):
+                        print(p)
+                        self.parameters[parameter][0] = p
+
+                        [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity] = self.evaluate_parameters() #TO DO
+
+                        value = self.score(precision=pixel_precision, sensitivity=pixel_sensitivity)
+                        print(value)
+                        if (value > current_max_value):
+                            current_parameter = p
+                            current_max_value = value
+                            current_precision = pixel_precision
+                            current_sensitivity = pixel_sensitivity
+
+                self.parameters[parameter][0] = current_parameter
+                self.save_progress(parameter=parameter,
+                              t1=t1,
+                              current_max_value=current_max_value,
+                              current_precision=current_precision,
+                              current_sensitivity=current_sensitivity)
 
 
 def main(args):
