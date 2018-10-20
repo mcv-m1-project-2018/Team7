@@ -1,5 +1,5 @@
 import numpy as np
-from . import bbox_iou
+from .bbox_iou import bbox_iou
 
 def performance_accumulation_pixel(pixel_candidates, pixel_annotation):
     """ 
@@ -118,10 +118,16 @@ def performance_evaluation_window(TP, FN, FP):
     
     The function returns the precision, accuracy and sensitivity
     """
-    
-    precision   = float(TP) / float(TP+FP); # Q: What if i do not have TN?
-    sensitivity = float(TP) / float(TP+FN)
-    accuracy    = float(TP) / float(TP+FN+FP);
+    precision   = 0
+    sensitivity = 0
+    accuracy    = 0
+
+    if (TP+FP):
+        precision   = float(TP) / float(TP+FP); # Q: What if i do not have TN?
+    if (TP+FN):
+        sensitivity = float(TP) / float(TP+FN)
+    if(TP+FN+FP):
+        accuracy    = float(TP) / float(TP+FN+FP);
 
     return [precision, sensitivity, accuracy]
 

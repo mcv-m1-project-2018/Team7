@@ -5,33 +5,109 @@ import cv2
 from data import Data_handler
 from data_analysis import Data_analysis
 from traffic_signs import traffic_sign_detection as detection
+from traffic_signs.evaluation.bbox_iou import bbox_iou
 import matplotlib.pyplot as plt
 import os
 import time
 
 class Traffic_sign_model():
     def __init__(self):
+        self.pixel_method_name  = 'hsvmorph'
+        self.window_method_name = 'None'       #Please make the name start with your method id followed by _
+
         self.parameters= {  # [optimal_value, start_range, end_range]
             'blue_low_h': [104, 90, 140],
             'blue_low_s': [49, 20, 255],
             'blue_low_v': [31, 20, 255],
+
             'blue_high_h': [136, 90, 140],
             'blue_high_s': [254, 20, 255],
             'blue_high_v': [239, 20, 255],
+            
+
             'red1_low_h': [0, 0, 25],
             'red1_low_s': [67, 20, 255],
             'red1_low_v': [55, 20, 255],
+            
             'red1_high_h': [7, 0, 25],
             'red1_high_s': [255, 20, 255],
-            'red1_high_v': [255, 20, 255],
+            'red1_high_v': [255, 20, 255],  
+            
+
             'red2_low_h': [178, 165, 180],
             'red2_low_s': [66, 20, 255],
             'red2_low_v': [56, 20, 255],
+            
             'red2_high_h': [180, 165, 180],
             'red2_high_s': [255, 20, 255],
             'red2_high_v': [249, 20, 255],
         }
         self.MAX_RANGE = 40 #max range to search for optimal parameter
+
+    def pixel_method(self, im):
+        """
+        Color segmentation of red and blue regions and morphological transformations
+        :param im: BGR image
+        :return: mask with the pixel candidates
+        """
+
+        color_segmentation_mask = self.color_segmentation(im)
+        pixel_candidates        = self.morph_transformation(color_segmentation_mask)
+        pixel_candidates        = self.ccl_generation_filtering(pixel_candidates)
+
+        return pixel_candidates
+
+    def window_method(self, im, pixel_candidates):
+        # Format of the bboxes is [tly, tlx, bry, brx, ...], where tl and br
+
+        window_candidates = self.get_ccl_bbox(pixel_candidates)
+        #final_mask, window_candidates = self.template_matching( im, pixel_candidates, threshold=.2, show=False)
+        
+        return window_candidates
+
+        # return window_candidates
+    def evaluate(self, split = 'train', output_dir='test_results/'):
+        """ test both pixel_method and window_method on the selected data split
+        and save results in results/
+        :param split: can be one of the following: 'test', 'val', 'train'
+        :param output_dir: directory to save the masks and the bounding boxes
+        """
+        print('Reading data')
+
+        if split == 'test':
+            annotations_available = False
+            images_dir = 'test/'
+            data_handler = Data_handler(images_dir)
+            data_split = data_handler.test_set
+        elif split == 'train':
+            annotations_available = True
+            images_dir = 'train/'
+            data_handler = Data_handler(images_dir)
+            data_split = data_handler.train_set
+        else:
+            annotations_available = True
+            images_dir = 'train/'
+            data_handler = Data_handler(images_dir)
+            data_split = data_handler.valid_set
+
+
+        data_handler.read_all()
+        model = Traffic_sign_model()
+
+        print('Running detection algorithm on', split ,'split\n')
+
+        pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy = \
+                         detection.traffic_sign_detection(annotations_available, images_dir, data_split, output_dir, \
+                                                          self.pixel_method_name,self.pixel_method,
+                                                          self.window_method_name,self.window_method)
+        metrics = {'pixel_precision': pixel_precision, 
+                   'pixel_accuracy': pixel_accuracy, 
+                   'pixel_specificity': pixel_specificity, 
+                   'pixel_sensitivity': pixel_sensitivity, 
+                   'window_precision': window_precision, 
+                   'window_accuracy': window_accuracy }
+        print(metrics)
+        return metrics
 
     def color_segmentation(self, im):
         """
@@ -43,24 +119,24 @@ class Traffic_sign_model():
         hsv_image = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
 
         blue_low = np.array(
-            (self.parameters['blue_low_h'], self.parameters['blue_low_s'], self.parameters['blue_low_v']),
+            (self.parameters['blue_low_h'][0], self.parameters['blue_low_s'][0], self.parameters['blue_low_v'][0]),
             dtype='uint8')
         blue_high = np.array(
-            (self.parameters['blue_high_h'], self.parameters['blue_high_s'], self.parameters['blue_high_v']),
+            (self.parameters['blue_high_h'][0], self.parameters['blue_high_s'][0], self.parameters['blue_high_v'][0]),
             dtype='uint8')
 
         red_1_low = np.array(
-            (self.parameters['red1_low_h'], self.parameters['red1_low_s'], self.parameters['red1_low_v']),
+            (self.parameters['red1_low_h'][0], self.parameters['red1_low_s'][0], self.parameters['red1_low_v'][0]),
             dtype='uint8')
         red_1_high = np.array(
-            (self.parameters['red1_high_h'], self.parameters['red1_high_s'], self.parameters['red1_high_v']),
+            (self.parameters['red1_high_h'][0], self.parameters['red1_high_s'][0], self.parameters['red1_high_v'][0]),
             dtype='uint8')
 
         red_2_low = np.array(
-            (self.parameters['red2_low_h'], self.parameters['red2_low_s'], self.parameters['red2_low_v']),
+            (self.parameters['red2_low_h'][0], self.parameters['red2_low_s'][0], self.parameters['red2_low_v'][0]),
             dtype='uint8')
         red_2_high = np.array(
-            (self.parameters['red2_high_h'], self.parameters['red2_high_s'], self.parameters['red2_high_v']),
+            (self.parameters['red2_high_h'][0], self.parameters['red2_high_s'][0], self.parameters['red2_high_v'][0]),
             dtype='uint8')
 
         mask_hue_red_1 = cv2.inRange(hsv_image, red_1_low, red_1_high)
@@ -72,18 +148,6 @@ class Traffic_sign_model():
 
         return final_mask
 
-    def pixel_method(self, im):
-        """
-        Color segmentation of red and blue regions and morphological transformations
-        :param im: BGR image
-        :return: mask with the pixel candidates
-        """
-
-        color_segmentation_mask = self.color_segmentation(im)
-
-        pixel_candidates = self.morph_transformation(color_segmentation_mask)
-
-        return pixel_candidates
 
     def morph_transformation(self, pixel_candidates):
         """
@@ -101,6 +165,10 @@ class Traffic_sign_model():
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (10, 10))
         pixel_candidates = cv2.morphologyEx(pixel_candidates, cv2.MORPH_CLOSE, kernel)
 
+        return pixel_candidates
+
+
+    def ccl_generation_filtering(self,pixel_candidates):
         # find all contours (segmented areas) of the mask to delete those that are not consistent with the train split
         # analysis
 
@@ -113,19 +181,12 @@ class Traffic_sign_model():
 
         for contour in contours:
             # max and min coordinates of the segmented area
-            xcnts = np.vstack(contour.reshape(-1, 2))
-            x_min = min(xcnts[:, 0])
-            x_max = max(xcnts[:, 0])
-            y_min = min(xcnts[:, 1])
-            y_max = max(xcnts[:, 1])
-
-            width = y_max - y_min
-            height = x_max - x_min
+            x, y, width, height = cv2.boundingRect(contour)
 
             # check if the aspect ratio and area are bigger or smaller than the ground truth. If it is consistent with
             # the ground truth, we try to fill it (some signs are not fully segmented because they contain white or other
             # colors) with cv2.fillPoly.
-            if max_aspect_ratio > height/width > min_aspect_ratio and max_area > width*height > min_area:
+            if max_aspect_ratio > width/height > min_aspect_ratio and max_area > width*height > min_area:
                 cv2.fillPoly(pixel_candidates, pts=[contour], color=255)
             else:
                 cv2.fillPoly(pixel_candidates, pts=[contour], color=0)
@@ -136,22 +197,27 @@ class Traffic_sign_model():
         image, contours, hierarchy = cv2.findContours(pixel_candidates, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
         for contour in contours:
-            xcnts = np.vstack(contour.reshape(-1, 2))
-            x_min = min(xcnts[:, 0])
-            x_max = max(xcnts[:, 0])
-            y_min = min(xcnts[:, 1])
-            y_max = max(xcnts[:, 1])
+            x,y,width,height = cv2.boundingRect(contour)
 
-            width = y_max - y_min
-            height = x_max - x_min
-
-            if max_aspect_ratio > height/width > min_aspect_ratio and max_area > width*height > min_area:
+            if max_aspect_ratio > width/height > min_aspect_ratio and max_area > width*height > min_area:
                 cv2.fillPoly(pixel_candidates, pts=[contour], color=255)
             else:
                 cv2.fillPoly(pixel_candidates, pts=[contour], color=0)
 
-
         return pixel_candidates
+
+
+    def get_ccl_bbox(self, pixel_candidates):
+        # Format of the bboxes is [tly, tlx, bry, brx, ...], where tl and br
+        window_candidates = []
+        image, contours, hierarchy = cv2.findContours(pixel_candidates, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+
+        for contour in contours:
+            x, y, width, height = cv2.boundingRect(contour)
+            window_candidates.append( [y, x, y+height, x+width] )
+
+        return window_candidates
+
 
     def template_matching(self, im, pixel_candidates, threshold=.6, show=False):
         """
@@ -214,7 +280,7 @@ class Traffic_sign_model():
                                     (y_max + padding) - (y_min - padding)
                                     , linewidth=1, edgecolor='r', facecolor='none')
                 plt.text(x_min, y_min, str(max_score), color="red", size=15)
-                ax.add_patch(rec)
+                ax.add_patch(rec) 
 
             if max_score < threshold:  # delete the region if the score is too low
                 cv2.fillPoly(pixel_candidates, pts=[contour], color=0)
@@ -234,12 +300,45 @@ class Traffic_sign_model():
 
         return final_mask, window_candidates
 
-    def window_method(self, im, pixel_candidates):
-        pass
-        # return window_candidates
 
-    def tuning_f1(self,train_set,valid_set):
-        pass
+    def sliding_window(self, im, pixel_candidates, window_shape = (100,100), step = 10):
+        im_width,im_height          = image.shape[:2]
+        window_width, window_height = window_shape
+        window_candidates = []
+
+        for x in range(0, im_width - window_width, step):
+            for y in range(0, im_height - window_height, step):
+                window = image[x:x + window_width, y:y + window_height, :]
+                if False:
+                    window_candidates.append([y,x,y+window_height,x+window_width])
+
+        return window_candidates
+
+
+    def remove_overlapped(self,window_candidates, score_candidates, method = 'Non_Maximum_Suppression'):
+        new_window_candidates = []
+
+        if Non_Maximum_Suppression == 'Non_Maximum_Suppression':
+            for i in range(len(window_candidates)):
+                for j in range(i,len(window_candidates)):
+                    if bbox_iou(window_candidates[i], window_candidates[j]) > 0.5:
+                        if score_candidates[i] > score_candidates[j]:
+                            score_candidates[j] = 0    # to be removed in next step
+                        else:
+                            score_candidates[i] = 0
+
+            for i in range(len(window_candidates)):
+                if score_candidates[i]:
+                    new_window_candidates.append(window_candidates[i])
+
+        return new_window_candidates        
+
+
+
+
+
+
+
 
 ####################################################### PARAMETER OPTIMIZATION ##################################################
     def save_progress(self, parameter, t1, current_max_value, current_precision, current_sensitivity):
@@ -247,8 +346,8 @@ class Traffic_sign_model():
             f.write("-------------------------------- " + parameter + "\n")
             f.write("total time: " + str((time.time() - t1) / 60) + " min\n")
             f.write(str(self.parameters) + "\n")
-            f.write("Score: " + str(current_max_value) + "\n")
-            f.write("Precision: " + str(current_precision) + "\n")
+            f.write("Score: "       + str(current_max_value)   + "\n")
+            f.write("Precision: "   + str(current_precision)   + "\n")
             f.write("Sensitivity: " + str(current_sensitivity) + "\n")
         print("-------------------------------- " + parameter)
         print("total time: " + str((time.time() - t1) / 60) + " min\n")
@@ -268,8 +367,8 @@ class Traffic_sign_model():
 
         [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity] = self.evaluate_parameters() #TO DO
 
-        current_max_value = self.score(precision=pixel_precision, sensitivity=pixel_sensitivity)
-        currrent_precision = pixel_precision
+        current_max_value   = self.score(precision=pixel_precision, sensitivity=pixel_sensitivity)
+        currrent_precision  = pixel_precision
         current_sensitivity = pixel_sensitivity
         last_current_max_value = 0
 
@@ -305,49 +404,9 @@ class Traffic_sign_model():
 
 
 def main(args):
-    """
-    The main function initializes the database with all the annotation from the ground truth. The database is contained
-    in the "data_hdlr" object (data.py). This object contains the val, train and test splits.
-    To analyze the shape and other attributes of the annotations from the train split, we call the "shape_analysis"
-    method from the "Data_analysis" class in the "data_analysis.py" file. The results of this analysis are printed
-    in the terminal.
-    Finally, we perform the segmentation over the validation split and we the metrics are also displayed through the
-    terminal. The results are saved in ./results/segmentation-method_window-method_split. For the test split we only
-    store the generated masks.
-    :param args: arguments
-    :return:
-    """
-
-    print("reading the data...")
-    data_hdlr = Data_handler(train_dir=args.images_dir)
-    data_hdlr.read_all()
-
-    # print("analyzing the train split...\n")
-    # sign_count, max_area, min_area, filling_ratios, max_aspect_ratio, min_aspect_ratio = Data_analysis.shape_analysis\
-    #     (data_hdlr.train_set)
-
-    # Data_analysis.create_templates(data_hdlr.train_set)
-
     model = Traffic_sign_model()
-    #
-    # for key in filling_ratios.keys():
-    #     print(key + ": " + str(filling_ratios[key]))
-    #
-    # print("sign_count: ", sign_count, "\n", "max_area: ", max_area, "\n", "min_area: ", min_area,
-    #       "\n", "max_aspect_ratio: ", max_aspect_ratio, "\n", "min_aspect_ratio: ", min_aspect_ratio)
-
-    print("\nprocessing the val split...\n")
-    pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy = \
-        detection.traffic_sign_detection("val", args.images_dir, data_hdlr.valid_set, args.output_dir, 'hsvClosing',
-                                         model.pixel_method, args.windowMethod)
-
-    print(pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy)
-
-    # print("\nprocessing the test split...")
-    #
-    # detection.traffic_sign_detection("test", args.test_dir, data_hdlr.test_set, args.output_dir, 'hsvClosing',
-    #                                  model.pixel_method, args.windowMethod)
-
+    model.evaluate(split = 'train', output_dir='test_results/')
+    
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
