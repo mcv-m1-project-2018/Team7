@@ -64,18 +64,23 @@ class method_1(Traffic_sign_model):
     def window_method(self, im, pixel_candidates):
     # Format of the bboxes is [tly, tlx, bry, brx, ...], where tl and br
         #cv2.imshow('o',im)
-        #cv2.imshow('pixel_candidates',pixel_candidates)
-
+        cv2.imshow('pixel_candidates',pixel_candidates)
+        cv2.waitKey(1)
         #window_candidates = self.get_ccl_bbox(pixel_candidates)
 
-        final_mask, window_candidates = self.template_matching( im, pixel_candidates, threshold=.4, show=True)
+        final_mask, window_candidates, score_candidates = self.template_matching( im, pixel_candidates, threshold=.4, show=False)
+        new_window_candidates = self.remove_overlapped( window_candidates, score_candidates )
+        for w in new_window_candidates:
+            cv2.rectangle(im,(w[1],w[0]),(w[3],w[2]),(0,255,0),3)
+        cv2.imshow('im',im)
+        cv2.waitKey(1)
 
         #for w in window_candidates:
         #    cv2.rectangle(im,(w[1],w[0]),(w[3],w[2]),(0,255,0),3)
         #cv2.imshow('boxes',im)
         #cv2.waitKey()
 
-        return window_candidates    
+        return new_window_candidates    
 
     def template_matching(self, im, pixel_candidates, threshold, show):
         """
@@ -91,8 +96,9 @@ class method_1(Traffic_sign_model):
         window_candidates = []
         im_h, im_w, _ = im.shape
         # read the templates
-        templates      = []
-        templates_mask = []
+        templates        = []
+        templates_mask   = []
+        score_candidates = []
         template_filenames = os.listdir("./data/templates/")
 
         for filename in template_filenames:
@@ -108,47 +114,72 @@ class method_1(Traffic_sign_model):
         # process every region found
         for contour in contours:
             x, y, width, height = cv2.boundingRect(contour)
+            """
+            x = int(min(max(x - width/2, 0),  im_w-1))
+            y = int(min(max(y - height/2, 0), im_h-1))
+            width  = max(width*2,100)
+            height = max(height*2,100)
+            """
             min_score = 100000
             
             if x<im_w and y<im_h and (x+width) < im_w and (y+height)<im_h:
                 region = np.copy(im[y:(y+height),x:(x+width), :])
-                region_shape = region.shape
-                region_resized = cv2.resize(region, (100, 100))
-
+                #region_shape    = region.shape
+                region_resized  = cv2.resize(region, (100, 100))
+                sliding_windows = self.sliding_window(region)
+                
                 for template, template_mask in zip(templates,templates_mask):
-                     #= cv2.bitwise_and(region_resized, templates_mask)
-                    #region_masked = region_resized.copy()
-                    #region_masked[template_mask] = 0
-                    #region_resized[template_mask] = 0
-                    #print(template_mask.shape  )
-                    #print(region_resized.shape )
-                    #template_mask = cv2.resize(region, (region_resized.shape[0], region_resized.shape[1]))
-                    region_masked = cv2.bitwise_and(region_resized, template_mask)
-                    res = cv2.matchTemplate(region_masked, template, cv2.TM_SQDIFF_NORMED)
-                    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+                    for w in sliding_windows:
+                        region = np.copy(im[w[1]:(w[1]+w[3]),w[0]:(w[0]+w[2]), :])
+                        #region_resized  = cv2.resize(region, (100, 100))
+                        #= cv2.bitwise_and(region_resized, templates_mask)
+                        #region_masked = region_resized.copy()
+                        #region_masked[template_mask] = 0
+                        #region_resized[template_mask] = 0
+                        #print(template_mask.shape  )
+                        #print(region_resized.shape )
+                        template_mask = cv2.resize(template_mask, (region_resized.shape[1], region_resized.shape[0]))
+                        region_masked = cv2.bitwise_and(region_resized, template_mask)
+                        res = cv2.matchTemplate(region_masked, template, cv2.TM_SQDIFF_NORMED)
+                        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
                     
 
-                    if min_val < min_score:
-                        min_score = min_val
-                        top_left = (min_loc[0]+x,min_loc[1]+y)
-                    if show:
-                        cv2.imshow('pixel_candidates',pixel_candidates)
-                        cv2.imshow('template',template)
-                        cv2.imshow('w',region_masked)
-                        cv2.imshow('template_mask',template_mask)
-                        print(min_val)
-                        cv2.waitKey()
+                        if min_val < min_score:
+                            min_score = min_val
+                            top_left = (min_loc[0]+x+w[0],min_loc[1]+y+w[1])
+                        if show:
+                            cv2.imshow('pixel_candidates',pixel_candidates)
+                            cv2.imshow('template',template)
+                            cv2.imshow('w',region_masked)
+                            cv2.imshow('template_mask',template_mask)
+                            print(min_val)
+                            cv2.waitKey()
 
-                bottom_right = (top_left[0] + region_shape[1], top_left[1] + region_shape[0])
+                        bottom_right = (top_left[0] + w[2], top_left[1] + w[3])
 
             
-            if min_score<threshold:
-                window_candidates.append([top_left[1],top_left[0], bottom_right[1],bottom_right[0]])
-                #window_candidates.append([y,x,y+height,x+width])
-                if show:
-                    w = window_candidates[-1]
-                    cv2.rectangle(im,(w[1],w[0]),(w[3],w[2]),(0,255,0),3)
-                    cv2.imshow('im',im)
-            print(min_score)
+                        if min_score<threshold:
+                            window_candidates.append([top_left[1],top_left[0], bottom_right[1],bottom_right[0]])
+                            score_candidates.append(min_score)
+                            #window_candidates.append([y,x,y+height,x+width])
+                            #if show:
+                        print(min_score)
 
-        return final_mask, window_candidates
+        return final_mask, window_candidates, score_candidates
+
+
+    def sliding_window(self, search_region):
+        im_height,im_width          = search_region.shape[:2]
+        slices       = []
+        width_range  = [int(im_width), int(im_width/2), int(im_width/3), int(im_width/4)]
+        height_range = [int(im_height), int(im_height/2), int(im_height/3), int(im_height/4)]
+        x_step       = im_width#max(int(im_width/2),2)
+        y_step       = im_height#max(int(im_height/2),2)
+        for w in width_range:
+            for h in height_range:
+                for x in range(0, im_width-w+1, x_step):
+                    for y in range(0, im_height-h+1, y_step):
+                        slices.append([x,y,w,h])
+
+        #slices = [[0,0,im_width,im_height]]
+        return slices

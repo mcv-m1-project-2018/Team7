@@ -317,12 +317,15 @@ class Traffic_sign_model():
         return window_candidates
 
 
-    def remove_overlapped(self,window_candidates, score_candidates, method = 'Non_Maximum_Suppression'):
+    def remove_overlapped(self, window_candidates, score_candidates, method = 'Non_Maximum_Suppression'):
         new_window_candidates = []
 
-        if Non_Maximum_Suppression == 'Non_Maximum_Suppression':
+        print(window_candidates)
+        print(score_candidates)
+
+        if method == 'Non_Maximum_Suppression':
             for i in range(len(window_candidates)):
-                for j in range(i,len(window_candidates)):
+                for j in range(i+1,len(window_candidates)):
                     if bbox_iou(window_candidates[i], window_candidates[j]) > 0.5:
                         if score_candidates[i] > score_candidates[j]:
                             score_candidates[j] = 0    # to be removed in next step
@@ -330,8 +333,10 @@ class Traffic_sign_model():
                             score_candidates[i] = 0
 
             for i in range(len(window_candidates)):
-                if score_candidates[i]:
-                    new_window_candidates.append(window_candidates[i])
+                #if score_candidates[i] > 0:
+                new_window_candidates.append(window_candidates[i])
+
+        print(new_window_candidates)
 
         return new_window_candidates        
 
