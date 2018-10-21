@@ -12,8 +12,8 @@ import time
 
 class Traffic_sign_model():
     def __init__(self):
-        self.pixel_method_name  = 'hsvmorph'
-        self.window_method_name = 'None'       #Please make the name start with your method id followed by _
+        self.pixel_method_name  = '1_dsfsdff'
+        self.window_method_name = '1_jsfkjdsk'       #Please make the name start with your method id followed by _
 
         self.parameters= {  # [optimal_value, start_range, end_range]
             'blue_low_h': [104, 90, 140],
@@ -59,14 +59,14 @@ class Traffic_sign_model():
 
     def window_method(self, im, pixel_candidates):
         # Format of the bboxes is [tly, tlx, bry, brx, ...], where tl and br
-
+        
         window_candidates = self.get_ccl_bbox(pixel_candidates)
         #final_mask, window_candidates = self.template_matching( im, pixel_candidates, threshold=.2, show=False)
         
         return window_candidates
 
         # return window_candidates
-    def evaluate(self, split = 'train', output_dir='test_results/'):
+    def evaluate(self, split = 'train', output_dir='results/'):
         """ test both pixel_method and window_method on the selected data split
         and save results in results/
         :param split: can be one of the following: 'test', 'val', 'train'
@@ -77,22 +77,22 @@ class Traffic_sign_model():
         if split == 'test':
             annotations_available = False
             images_dir = 'test/'
-            data_handler = Data_handler(images_dir)
+            data_handler = Data_handler()
             data_split = data_handler.test_set
         elif split == 'train':
             annotations_available = True
             images_dir = 'train/'
-            data_handler = Data_handler(images_dir)
+            data_handler = Data_handler()
             data_split = data_handler.train_set
         else:
             annotations_available = True
             images_dir = 'train/'
-            data_handler = Data_handler(images_dir)
+            data_handler = Data_handler()
             data_split = data_handler.valid_set
 
 
         data_handler.read_all()
-        model = Traffic_sign_model()
+        
 
         print('Running detection algorithm on', split ,'split\n')
 
@@ -104,6 +104,7 @@ class Traffic_sign_model():
                    'pixel_accuracy': pixel_accuracy, 
                    'pixel_specificity': pixel_specificity, 
                    'pixel_sensitivity': pixel_sensitivity, 
+
                    'window_precision': window_precision, 
                    'window_accuracy': window_accuracy }
         print(metrics)
@@ -309,7 +310,7 @@ class Traffic_sign_model():
         for x in range(0, im_width - window_width, step):
             for y in range(0, im_height - window_height, step):
                 window = image[x:x + window_width, y:y + window_height, :]
-                if False:
+                if False: # if the window matches any of the signs
                     window_candidates.append([y,x,y+window_height,x+window_width])
 
         return window_candidates
