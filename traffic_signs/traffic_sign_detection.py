@@ -122,7 +122,7 @@ def traffic_sign_detection(annotations_available, directory, split_instances, ou
                 # Plot performance evaluation
                 [window_precision, window_sensitivity, window_accuracy] = performance_evaluation_window(windowTP, windowFN, windowFP)
 
-    return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy]
+    return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_sensitivity, window_accuracy]
 
 
 if __name__ == '__main__':

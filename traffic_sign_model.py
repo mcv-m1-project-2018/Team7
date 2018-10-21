@@ -96,7 +96,8 @@ class Traffic_sign_model():
 
         print('Running detection algorithm on', split ,'split\n')
 
-        pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy = \
+        pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity,\
+                         window_precision, window_sensitivity, window_accuracy = \
                          detection.traffic_sign_detection(annotations_available, images_dir, data_split, output_dir, \
                                                           self.pixel_method_name,self.pixel_method,
                                                           self.window_method_name,self.window_method)
@@ -104,7 +105,7 @@ class Traffic_sign_model():
                    'pixel_accuracy': pixel_accuracy, 
                    'pixel_specificity': pixel_specificity, 
                    'pixel_sensitivity': pixel_sensitivity, 
-
+                   'window_sensitivity':window_sensitivity,
                    'window_precision': window_precision, 
                    'window_accuracy': window_accuracy }
         print(metrics)
