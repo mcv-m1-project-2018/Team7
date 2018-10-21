@@ -3,9 +3,9 @@
 import numpy as np
 import cv2
 from skimage import color
-from traffic_sign_model import Traffic_sign_model
+#from traffic_sign_model import Traffic_sign_model
 
-traffic_sign_model = Traffic_sign_model()
+#traffic_sign_model = Traffic_sign_model()
 
 
 def candidate_generation_pixel_hsvclosing(image):

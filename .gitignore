@@ -1,5 +1,6 @@
 #Dataset
 train/*
+test_results/*
 test/*
 results/
 
