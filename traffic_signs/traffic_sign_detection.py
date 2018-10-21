@@ -51,6 +51,7 @@ def traffic_sign_detection(annotations_available, directory, split_instances, ou
     pixel_sensitivity = None
     window_precision  = None
     window_accuracy   = None
+    window_sensitivity= None
 
     # -1 just to avoid division by zero
     pixelTP = 1

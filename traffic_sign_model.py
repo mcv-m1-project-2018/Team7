@@ -303,25 +303,9 @@ class Traffic_sign_model():
         return final_mask, window_candidates
 
 
-    def sliding_window(self, im, pixel_candidates, window_shape = (100,100), step = 10):
-        im_width,im_height          = image.shape[:2]
-        window_width, window_height = window_shape
-        window_candidates = []
 
-        for x in range(0, im_width - window_width, step):
-            for y in range(0, im_height - window_height, step):
-                window = image[x:x + window_width, y:y + window_height, :]
-                if False: # if the window matches any of the signs
-                    window_candidates.append([y,x,y+window_height,x+window_width])
-
-        return window_candidates
-
-
-    def remove_overlapped(self, window_candidates, score_candidates, method = 'Non_Maximum_Suppression'):
+    def remove_overlapped(self, window_candidates, score_candidates, method = 'union'):
         new_window_candidates = []
-
-        print(window_candidates)
-        print(score_candidates)
 
         if method == 'Non_Maximum_Suppression':
             for i in range(len(window_candidates)):
@@ -331,12 +315,19 @@ class Traffic_sign_model():
                             score_candidates[j] = 0    # to be removed in next step
                         else:
                             score_candidates[i] = 0
-
+        if method == 'union':
             for i in range(len(window_candidates)):
-                #if score_candidates[i] > 0:
-                new_window_candidates.append(window_candidates[i])
+                for j in range(i+1,len(window_candidates)):
+                    if bbox_iou(window_candidates[i], window_candidates[j]) > 0.2 and score_candidates[j]:
+                            score_candidates[j]  = 0
+                            window_candidates[i] = [ min(window_candidates[i][0],window_candidates[j][0]),
+                                                     min(window_candidates[i][1],window_candidates[j][1]),
+                                                     max(window_candidates[i][2],window_candidates[j][2]),
+                                                     max(window_candidates[i][3],window_candidates[j][3])]
 
-        print(new_window_candidates)
+        for i in range(len(window_candidates)):
+            if score_candidates[i] > 0:
+                new_window_candidates.append(window_candidates[i])
 
         return new_window_candidates        
 
